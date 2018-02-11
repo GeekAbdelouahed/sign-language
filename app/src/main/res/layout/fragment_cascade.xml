@@ -47,7 +47,18 @@
         android:layout_alignParentTop="true"
         android:layout_margin="20dp"
         android:layout_marginTop="10dp"
-        android:src="@drawable/ic_camera_front"
-        android:tint="#fff" />
+        android:background="@drawable/round_layout"
+        android:padding="10dp"
+        android:src="@drawable/ic_camera_front" />
+
+    <TextView
+        android:id="@+id/tv_classifier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="20dp"
+        android:textColor="#fff"
+        android:textSize="30sp" />
 
 </RelativeLayout>

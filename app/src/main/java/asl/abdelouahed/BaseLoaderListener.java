@@ -43,11 +43,6 @@ public class BaseLoaderListener extends BaseLoaderCallback {
         switch (status) {
             case LoaderCallbackInterface.SUCCESS: {
                 cameraView.enableView();
-                if (touchListener != null)
-                    cameraView.setOnTouchListener(touchListener);
-                if (cameraListener != null)
-                    cameraView.setCvCameraViewListener(cameraListener);
-
                 try {
                     InputStream is = context.getResources().openRawResource(R.raw.cascade);
                     File cascadeDir = context.getDir("cascade", Context.MODE_PRIVATE);
@@ -60,7 +55,14 @@ public class BaseLoaderListener extends BaseLoaderCallback {
                     }
                     is.close();
                     os.close();
-                    cascadeLoadListener.onLoadListener(mCascadeFile);
+
+                    // Listeners
+                    if (touchListener != null)
+                        cameraView.setOnTouchListener(touchListener);
+                    if (cameraListener != null)
+                        cameraView.setCvCameraViewListener(cameraListener);
+                    if (cascadeLoadListener != null)
+                        cascadeLoadListener.onLoadListener(mCascadeFile);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } catch (IOException e) {

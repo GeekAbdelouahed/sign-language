@@ -120,10 +120,12 @@ public class CascadeFragment extends BaseFragment implements CameraBridgeViewBas
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
-        Mat bwMath = new Mat();
-        Imgproc.threshold(mGray, bwMath, 100, 255, Imgproc.THRESH_BINARY);
+
+        // gra to black and white
+        Imgproc.threshold(mGray, mGray, 200, 500, Imgproc.THRESH_BINARY);
+
         MatOfRect hands = new MatOfRect();
-        cascadeClassifier.detectMultiScale(bwMath, hands);
+        cascadeClassifier.detectMultiScale(mGray, hands);
         if (!hands.empty()) {
             Rect rect = hands.toList().get(0);
             Imgproc.rectangle(mRgba, rect.tl(), rect.br(), HAND_RECT_COLOR);
