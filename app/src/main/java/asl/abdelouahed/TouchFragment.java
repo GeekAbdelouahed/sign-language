@@ -45,22 +45,23 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
         @Override
         public void run() {
             tvFingersCount.setText(numberOfFingers + "");
-            matToBitmap(mRgba, mGray, boundRect);
+            matToBitmap(mRgba, mGray, rBound);
         }
     };
 
-    private final double iThreshold = 0;
-    private Rect boundRect;
+    private final double THRESHOLD = 200;
+    private final double MAX_VALUE = 500;
+    private boolean isColorSelected = false;
+    private Rect rBound;
     private Mat mRgba;
     private Mat mGray;
-    private Scalar mBlobColorHsv;
-    private Scalar mBlobColorRgba;
-    private ColorBlobDetector mDetector;
+    private Scalar sBlobColorHsv;
+    private Scalar sBlobColorRgba;
+    private ColorBlobDetector detector;
     private Mat mSpectrum;
-    private boolean isColorSelected = false;
-    private Size SPECTRUM_SIZE;
-    private Scalar CONTOUR_COLOR;
-    private Scalar CONTOUR_COLOR_WHITE;
+    private Size spectrumSize;
+    private Scalar contourColor;
+    private Scalar contourColorWhite;
     private int numberOfFingers = 0;
 
     @Override
@@ -126,13 +127,13 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
         makeToast("Focus mode : " + cParams.getFocusMode());
 
         mRgba = new Mat(height, width, CvType.CV_8UC4);
-        mDetector = new ColorBlobDetector();
         mSpectrum = new Mat();
-        mBlobColorRgba = new Scalar(255);
-        mBlobColorHsv = new Scalar(255);
-        SPECTRUM_SIZE = new Size(200, 64);
-        CONTOUR_COLOR = new Scalar(255, 0, 0, 255);
-        CONTOUR_COLOR_WHITE = new Scalar(255, 255, 255, 255);
+        sBlobColorRgba = new Scalar(255);
+        sBlobColorHsv = new Scalar(255);
+        spectrumSize = new Size(200, 64);
+        contourColor = new Scalar(255, 0, 0, 255);
+        contourColorWhite = new Scalar(255, 255, 255, 255);
+        detector = new ColorBlobDetector();
     }
 
     public boolean onTouch(View v, MotionEvent event) {
@@ -164,19 +165,19 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
             Imgproc.cvtColor(touchedRegionRgba, touchedRegionHsv, Imgproc.COLOR_RGB2HSV_FULL);
 
             // Calculate average color of touched region
-            mBlobColorHsv = Core.sumElems(touchedRegionHsv);
+            sBlobColorHsv = Core.sumElems(touchedRegionHsv);
             int pointCount = touchedRect.width * touchedRect.height;
-            for (int i = 0; i < mBlobColorHsv.val.length; i++)
-                mBlobColorHsv.val[i] /= pointCount;
+            for (int i = 0; i < sBlobColorHsv.val.length; i++)
+                sBlobColorHsv.val[i] /= pointCount;
 
-            mBlobColorRgba = convertScalarHsv2Rgba(mBlobColorHsv);
+            sBlobColorRgba = convertScalarHsv2Rgba(sBlobColorHsv);
 
-            Log.i(TAG, "Touched rgba color: (" + mBlobColorRgba.val[0] + ", " + mBlobColorRgba.val[1] +
-                    ", " + mBlobColorRgba.val[2] + ", " + mBlobColorRgba.val[3] + ")");
+            Log.i(TAG, "Touched rgba color: (" + sBlobColorRgba.val[0] + ", " + sBlobColorRgba.val[1] +
+                    ", " + sBlobColorRgba.val[2] + ", " + sBlobColorRgba.val[3] + ")");
 
-            mDetector.setHsvColor(mBlobColorHsv);
+            detector.setHsvColor(sBlobColorHsv);
 
-            Imgproc.resize(mDetector.getSpectrum(), mSpectrum, SPECTRUM_SIZE);
+            Imgproc.resize(detector.getSpectrum(), mSpectrum, spectrumSize);
 
             isColorSelected = true;
 
@@ -185,7 +186,7 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
         } catch (Exception e) {
             makeToast(e.getMessage());
         }
-        return false; // don't need subsequent touch events
+        return false;
 
     }
 
@@ -200,17 +201,34 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
+        Mat kernel = Mat.ones(5, 5, CvType.CV_32F);
 
-        // gra to black and white
-        Imgproc.threshold(mGray, mGray, 200, 500, Imgproc.THRESH_BINARY);
-        Imgproc.equalizeHist(mGray, mGray);
+        // gray to binary
+        //Imgproc.adaptiveThreshold(mGray , mGray , MAX_VALUE ,  Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 15, 40);
+        Imgproc.threshold(mGray, mGray, THRESHOLD, MAX_VALUE, Imgproc.THRESH_BINARY);
 
-        Imgproc.GaussianBlur(mRgba, mRgba, new Size(3, 3), 1, 1);
+        // morphological operation
+        Imgproc.erode(mGray, mGray, kernel);
+
+        // Imgproc.morphologyEx(mGray, mGray, Imgproc.MORPH_OPEN, kernel);
+
+        // enhance image
+        //Imgproc.equalizeHist(mGray, mGray);
+
+
+        //morphological operation
+        //Imgproc.dilate(mGray, mGray, Imgproc.getStructuringElement(Imgproc.MORPH_CROSS, new Size(2, 2)));
+        //morphological operation
+        //Imgproc.morphologyEx(mGray, mGray, 1, Imgproc.getStructuringElement(Imgproc.MORPH_OPEN, new Size(2, 2)));
+
+        // GaussianBlur Mask
+        //Imgproc.GaussianBlur(mRgba, mRgba, new Size(3, 3), 1, 1);
 
         if (!isColorSelected) return mRgba;
 
-        List<MatOfPoint> contours = mDetector.getContours();
-        mDetector.process(mRgba);
+        List<MatOfPoint> contours = detector.getContours();
+
+        detector.process(mRgba);
 
         Log.d(TAG, "Contours count: " + contours.size());
 
@@ -234,25 +252,25 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
             }
         }
 
-        boundRect = Imgproc.boundingRect(new MatOfPoint(contours.get(boundPos).toArray()));
+        rBound = Imgproc.boundingRect(new MatOfPoint(contours.get(boundPos).toArray()));
 
-        Imgproc.rectangle(mRgba, boundRect.tl(), boundRect.br(), CONTOUR_COLOR_WHITE, 2, 8, 0);
+        Imgproc.rectangle(mRgba, rBound.tl(), rBound.br(), contourColorWhite, 2, 8, 0);
 
 
         Log.d(TAG,
                 " Row start [" +
-                        (int) boundRect.tl().y + "] row end [" +
-                        (int) boundRect.br().y + "] Col start [" +
-                        (int) boundRect.tl().x + "] Col end [" +
-                        (int) boundRect.br().x + "]");
+                        (int) rBound.tl().y + "] row end [" +
+                        (int) rBound.br().y + "] Col start [" +
+                        (int) rBound.tl().x + "] Col end [" +
+                        (int) rBound.br().x + "]");
 
-        double a = boundRect.br().y - boundRect.tl().y;
+        double a = rBound.br().y - rBound.tl().y;
         a = a * 0.7;
-        a = boundRect.tl().y + a;
+        a = rBound.tl().y + a;
 
-        Log.d(TAG, " A [" + a + "] br y - tl y = [" + (boundRect.br().y - boundRect.tl().y) + "]");
+        Log.d(TAG, " A [" + a + "] br y - tl y = [" + (rBound.br().y - rBound.tl().y) + "]");
 
-        Imgproc.rectangle(mRgba, boundRect.tl(), new Point(boundRect.br().x, a), CONTOUR_COLOR, 2, 8, 0);
+        Imgproc.rectangle(mRgba, rBound.tl(), new Point(rBound.br().x, a), contourColor, 2, 8, 0);
 
         MatOfPoint2f pointMat = new MatOfPoint2f();
         Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(boundPos).toArray()), pointMat, 3, true);
@@ -281,7 +299,7 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
         for (int j = 0; j < convexDefect.toList().size(); j = j + 4) {
             Point farPoint = contours.get(boundPos).toList().get(convexDefect.toList().get(j + 2));
             Integer depth = convexDefect.toList().get(j + 3);
-            if (depth > iThreshold && farPoint.y < a) {
+            if (depth > THRESHOLD && farPoint.y < a) {
                 listPoDefect.add(contours.get(boundPos).toList().get(convexDefect.toList().get(j + 2)));
             }
             Log.d(TAG, "defects [" + j + "] " + convexDefect.toList().get(j + 3));
@@ -294,7 +312,7 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
         Log.d(TAG, "hull: " + hull.toList());
         Log.d(TAG, "defects: " + convexDefect.toList());
 
-        Imgproc.drawContours(mRgba, hullPoints, -1, CONTOUR_COLOR, 3);
+        Imgproc.drawContours(mRgba, hullPoints, -1, contourColor, 3);
 
         int defectsTotal = (int) convexDefect.total();
         Log.d(TAG, "Defect total " + defectsTotal);

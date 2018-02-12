@@ -26,16 +26,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="2dp"
-            android:layout_weight="1"
-            android:scaleType="fitXY" />
+            android:layout_weight="1" />
 
         <ImageView
             android:id="@+id/iv_test_gray_touch"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="2dp"
-            android:layout_weight="1"
-            android:scaleType="fitXY" />
+            android:layout_weight="1" />
 
     </LinearLayout>
 

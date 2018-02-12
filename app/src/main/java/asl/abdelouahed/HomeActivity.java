@@ -19,7 +19,7 @@ public class HomeActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_home);
 
-        mFragment = new CascadeFragment();
+        mFragment = new TouchFragment();
 
         getSupportFragmentManager()
                 .beginTransaction()
@@ -28,7 +28,7 @@ public class HomeActivity extends AppCompatActivity {
 
     }
 
-    public void switchFragment(View view) {
+ /*   public void switchFragment(View view) {
 
         mFragment = mFragment.getClass() == CascadeFragment.class ? new TouchFragment() : new CascadeFragment();
 
@@ -37,5 +37,5 @@ public class HomeActivity extends AppCompatActivity {
                 .replace(R.id.container, mFragment)
                 .commit();
 
-    }
+    }*/
 }
