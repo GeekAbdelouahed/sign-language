@@ -10,12 +10,12 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -33,10 +33,13 @@ import org.opencv.imgproc.Imgproc;
 import java.util.LinkedList;
 import java.util.List;
 
+import static asl.abdelouahed.UtilsConstants.THRESHOLD;
+
 public class TouchFragment extends BaseFragment implements OnTouchListener, CvCameraViewListener2 {
 
     private static final String TAG = "Asl::CascadeFragment";
 
+    private SeekBar sbThreshold;
     private ImageView ivTestRgb, ivTestGray, ivSwitchCam;
     private CameraView cameraView;
     private TextView tvFingersCount;
@@ -44,17 +47,29 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
     private final Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            tvFingersCount.setText(numberOfFingers + "");
-            matToBitmap(mRgba, mGray, rBound);
+            try {
+                tvFingersCount.setText(numberOfFingers + "");
+
+                bRgba = UtilsImage.matToBitmap(mRgba, rBound);
+                bGray = UtilsImage.matToBitmap(mGray, rBound);
+
+                ivTestRgb.setImageBitmap(bRgba);
+                ivTestGray.setImageBitmap(bGray);
+
+                arrayPixels = UtilsImage.matToPixels(mGray);
+
+            } catch (Exception e) {
+                makeToast(e.getMessage());
+            }
         }
     };
 
-    private final double THRESHOLD = 200;
-    private final double MAX_VALUE = 500;
-    private boolean isColorSelected = false;
-    private Rect rBound;
+    private double[] arrayPixels;
+    private Bitmap bGray, bRgba;
     private Mat mRgba;
     private Mat mGray;
+    private boolean isColorSelected = false;
+    private Rect rBound;
     private Scalar sBlobColorHsv;
     private Scalar sBlobColorRgba;
     private ColorBlobDetector detector;
@@ -75,6 +90,8 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
         ivTestGray = view.findViewById(R.id.iv_test_gray_touch);
         ivSwitchCam = view.findViewById(R.id.iv_switch_cam_touch);
         tvFingersCount = view.findViewById(R.id.tv_finger_count);
+        sbThreshold = view.findViewById(R.id.sb_threshold);
+        sbThreshold.setProgress(THRESHOLD);
 
         baseLoaderListener = new BaseLoaderListener
                 .BUILDER()
@@ -107,6 +124,25 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
 
                 cameraView.enableView();
 
+            }
+        });
+
+        sbThreshold.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                makeToast(progress + "");
+                THRESHOLD = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                makeToast(seekBar.getProgress() + "");
+                THRESHOLD = seekBar.getProgress();
             }
         });
 
@@ -170,7 +206,7 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
             for (int i = 0; i < sBlobColorHsv.val.length; i++)
                 sBlobColorHsv.val[i] /= pointCount;
 
-            sBlobColorRgba = convertScalarHsv2Rgba(sBlobColorHsv);
+            sBlobColorRgba = UtilsImage.convertScalarHsv2Rgba(sBlobColorHsv);
 
             Log.i(TAG, "Touched rgba color: (" + sBlobColorRgba.val[0] + ", " + sBlobColorRgba.val[1] +
                     ", " + sBlobColorRgba.val[2] + ", " + sBlobColorRgba.val[3] + ")");
@@ -190,13 +226,6 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
 
     }
 
-    private Scalar convertScalarHsv2Rgba(Scalar hsvColor) {
-        Mat pointMatRgba = new Mat();
-        Mat pointMatHsv = new Mat(1, 1, CvType.CV_8UC3, hsvColor);
-        Imgproc.cvtColor(pointMatHsv, pointMatRgba, Imgproc.COLOR_HSV2RGB_FULL, 4);
-
-        return new Scalar(pointMatRgba.get(0, 0));
-    }
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         mRgba = inputFrame.rgba();
@@ -204,25 +233,10 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
         Mat kernel = Mat.ones(5, 5, CvType.CV_32F);
 
         // gray to binary
-        //Imgproc.adaptiveThreshold(mGray , mGray , MAX_VALUE ,  Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 15, 40);
-        Imgproc.threshold(mGray, mGray, THRESHOLD, MAX_VALUE, Imgproc.THRESH_BINARY);
+        UtilsImage.matToBinary(mGray);
 
         // morphological operation
         Imgproc.erode(mGray, mGray, kernel);
-
-        // Imgproc.morphologyEx(mGray, mGray, Imgproc.MORPH_OPEN, kernel);
-
-        // enhance image
-        //Imgproc.equalizeHist(mGray, mGray);
-
-
-        //morphological operation
-        //Imgproc.dilate(mGray, mGray, Imgproc.getStructuringElement(Imgproc.MORPH_CROSS, new Size(2, 2)));
-        //morphological operation
-        //Imgproc.morphologyEx(mGray, mGray, 1, Imgproc.getStructuringElement(Imgproc.MORPH_OPEN, new Size(2, 2)));
-
-        // GaussianBlur Mask
-        //Imgproc.GaussianBlur(mRgba, mRgba, new Size(3, 3), 1, 1);
 
         if (!isColorSelected) return mRgba;
 
@@ -334,23 +348,6 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
     public void onCameraViewStopped() {
         mGray.release();
         mRgba.release();
-    }
-
-    private Bitmap matToBitmap(Mat mRgba, Mat mGray, Rect rect) {
-        try {
-            Mat mMat = new Mat(mRgba, rect);
-            Bitmap bitmap = Bitmap.createBitmap(mMat.cols(), mMat.rows(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(mMat, bitmap);
-            ivTestRgb.setImageBitmap(bitmap);
-            mMat = new Mat(mGray, rect);
-            bitmap = Bitmap.createBitmap(mMat.cols(), mMat.rows(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(mMat, bitmap);
-            ivTestGray.setImageBitmap(bitmap);
-            return bitmap;
-        } catch (Exception e) {
-            makeToast(e.getMessage());
-            return null;
-        }
     }
 
     @Override

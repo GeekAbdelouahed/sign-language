@@ -9,7 +9,13 @@ import android.widget.Toast;
 
 public class BaseFragment extends Fragment {
 
-    protected void makeToast(String msg){
-        Toast.makeText(getContext() , msg , Toast.LENGTH_SHORT).show();
+    private Toast toast;
+
+    protected void makeToast(String msg) {
+
+        if (toast != null)
+            toast.cancel();
+        toast = Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT);
+        toast.show();
     }
 }
