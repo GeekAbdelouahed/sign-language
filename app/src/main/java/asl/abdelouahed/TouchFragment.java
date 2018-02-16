@@ -13,6 +13,8 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import org.neuroph.contrib.imgrec.ImageRecognitionPlugin;
+import org.neuroph.core.NeuralNetwork;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.android.OpenCVLoader;
@@ -30,6 +32,9 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -58,11 +63,29 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
 
                 arrayPixels = UtilsImage.matToPixels(mGray);
 
+                File file = UtilsImage.bitmapToFile(getActivity(), bGray);
+                HashMap<String, Double> result = UtilsImage.recognizeImage(imageRecognition, file);
+                String answer = UtilsImage.getAnswerRecognition(result);
+                makeToast(answer);
+
             } catch (Exception e) {
                 makeToast(e.getMessage());
             }
         }
     };
+
+    private Runnable loadDataRunnable = new Runnable() {
+        public void run() {
+            // open neural network
+            InputStream is = getResources().openRawResource(R.raw.animals_net);
+            // load neural network
+            nnet = NeuralNetwork.load(is);
+            imageRecognition = (ImageRecognitionPlugin) nnet.getPlugin(ImageRecognitionPlugin.class);
+        }
+    };
+
+    private NeuralNetwork nnet;
+    private ImageRecognitionPlugin imageRecognition;
 
     private double[] arrayPixels;
     private Bitmap bGray, bRgba;
@@ -82,6 +105,8 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        new Thread(null, loadDataRunnable, "dataLoader", 32000).start();
 
         View view = inflater.inflate(R.layout.fragment_touch, container, false);
 
@@ -230,13 +255,9 @@ public class TouchFragment extends BaseFragment implements OnTouchListener, CvCa
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
-        Mat kernel = Mat.ones(5, 5, CvType.CV_32F);
 
         // gray to binary
         UtilsImage.matToBinary(mGray);
-
-        // morphological operation
-        Imgproc.erode(mGray, mGray, kernel);
 
         if (!isColorSelected) return mRgba;
 

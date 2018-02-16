@@ -27,4 +27,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     implementation project(':openCVLibrary340')
+    implementation files('libs/neuroph.jar')
+    implementation files('libs/encog-engine-2.5.0.jar')
+    implementation files('libs/jocl.jar')
 }
