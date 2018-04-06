@@ -17,15 +17,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
-    packagingOptions {
-        exclude 'META-INF/rxjava.properties'
-    }
-
-    compileOptions {
-        targetCompatibility 1.8
-        sourceCompatibility 1.8
-    }
 }
 
 dependencies {
@@ -46,17 +37,6 @@ dependencies {
 
     // Tensorflow
     compile 'org.tensorflow:tensorflow-android:1.7.0'
-
-    // Dagger2
-    compile 'com.google.dagger:dagger:2.9'
-    annotationProcessor "com.google.dagger:dagger-compiler:2.9"
-    provided 'javax.annotation:jsr250-api:1.0'
-
-    // RxAndroid
-    compile 'io.reactivex:rxandroid:1.2.0'
-    compile 'io.reactivex:rxjava:1.1.5'
-    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
-    compile 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
 
     // MultiDex
     compile 'com.android.support:multidex:1.0.2'

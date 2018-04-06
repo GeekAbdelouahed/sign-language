@@ -10,8 +10,8 @@ import org.opencv.core.Mat;
 public abstract class UtilsConstants {
 
     public static final int INPUT_SIZE = 299;
-    public static final int IMAGE_MEAN = 117;
-    public static final float IMAGE_STD = 1;
+    public static final int IMAGE_MEAN = 128;
+    public static final float IMAGE_STD = 128f;
 
     public static final String INPUT_NAME = "Mul";
     public static final String OUTPUT_NAME = "final_result";

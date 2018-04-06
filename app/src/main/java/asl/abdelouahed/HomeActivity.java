@@ -6,7 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 
-import asl.abdelouahed.recognition.mvp.RecognitionFragment;
+import asl.abdelouahed.recognition.RecognitionFragment;
 
 public class HomeActivity extends AppCompatActivity {
 
