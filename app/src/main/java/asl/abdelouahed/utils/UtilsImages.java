@@ -1,6 +1,7 @@
 package asl.abdelouahed.utils;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
@@ -14,9 +15,9 @@ import org.opencv.imgproc.Imgproc;
 import java.io.ByteArrayOutputStream;
 
 import static asl.abdelouahed.utils.UtilsConstants.INPUT_SIZE;
+import static asl.abdelouahed.utils.UtilsConstants.KERNEL;
 import static asl.abdelouahed.utils.UtilsConstants.MAX_VALUE;
 import static asl.abdelouahed.utils.UtilsConstants.THRESHOLD;
-import static asl.abdelouahed.utils.UtilsConstants.KERNEL;
 import static org.opencv.imgproc.Imgproc.THRESH_BINARY;
 
 /**
@@ -64,5 +65,11 @@ public abstract class UtilsImages {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
         return Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, false);
+    }
+
+    public static Bitmap rotateBitmap(Bitmap bitmap, int degrees) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degrees);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 }

@@ -1,18 +1,15 @@
 package asl.abdelouahed.recognition;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
+import android.support.design.widget.FloatingActionButton;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.SeekBar;
-import android.widget.TextView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
@@ -32,48 +29,39 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
 import asl.abdelouahed.BaseFragment;
+import asl.abdelouahed.CameraListener;
 import asl.abdelouahed.R;
-import asl.abdelouahed.models.Classifier;
-import asl.abdelouahed.models.TensorFlowImageClassifier;
 import asl.abdelouahed.utils.UtilsColorBlobDetector;
 import asl.abdelouahed.utils.UtilsImages;
 import asl.abdelouahed.views.CameraView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import static asl.abdelouahed.utils.UtilsConstants.IMAGE_MEAN;
-import static asl.abdelouahed.utils.UtilsConstants.IMAGE_STD;
-import static asl.abdelouahed.utils.UtilsConstants.INPUT_NAME;
-import static asl.abdelouahed.utils.UtilsConstants.INPUT_SIZE;
-import static asl.abdelouahed.utils.UtilsConstants.LABEL_FILE;
-import static asl.abdelouahed.utils.UtilsConstants.MODEL_FILE;
-import static asl.abdelouahed.utils.UtilsConstants.OUTPUT_NAME;
 import static asl.abdelouahed.utils.UtilsConstants.THRESHOLD;
 
 public class RecognitionFragment extends BaseFragment implements OnTouchListener, CvCameraViewListener2 {
 
-    private static final String TAG = "Asl::RecognitionFragment";
+    private CameraListener cameraListener;
 
-    @BindView(R.id.sb_threshold)
-    SeekBar sbThreshold;
-    @BindView(R.id.iv_test_rgb_touch)
-    ImageView ivTestRgb;
-    @BindView(R.id.iv_test_gray_touch)
-    ImageView ivTestGray;
-    @BindView(R.id.iv_switch_cam_touch)
-    ImageView ivSwitchCam;
-    @BindView(R.id.camera_view_touch)
+    /*    @BindView(R.id.sb_threshold)
+        SeekBar sbThreshold;
+        @BindView(R.id.iv_test_rgb_touch)
+        ImageView ivTestRgb;
+        @BindView(R.id.iv_test_gray_touch)
+        ImageView ivTestGray;*/
+    @BindView(R.id.fab_switch_cam_touch)
+    FloatingActionButton fabSwitchCam;
+    @BindView(R.id.camera_view_back)
     CameraView cameraView;
-    @BindView(R.id.tv_finger_count)
-    TextView tvResult;
+/*    @BindView(R.id.tv_finger_count)
+    TextView tvResult;*/
 
-    private Classifier classifier;
-    private List<Classifier.Recognition> results;
+/*    private Classifier classifier;
+    private List<Classifier.Recognition> results;*/
 
     private Bitmap bGray, bRgba;
     private Mat mRgba;
@@ -93,28 +81,15 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
 
                 bRgba = UtilsImages.matToBitmap(mRgba, rBound);
                 bGray = UtilsImages.matToBitmap(mGray, rBound);
-
-                ivTestRgb.setImageBitmap(bRgba);
-                ivTestGray.setImageBitmap(bGray);
                 bGray = UtilsImages.scaleBitmap(bGray);
-
-                runInBackground(runnableRecognition);
+                bRgba = UtilsImages.scaleBitmap(bRgba);
+                bGray = UtilsImages.rotateBitmap(bGray, 90);
+                bRgba = UtilsImages.rotateBitmap(bRgba, 90);
+                cameraListener.onFrameChanged(bRgba, bGray);
 
             } catch (Exception e) {
                 makeToast(e.getMessage());
             }
-        }
-    }, runnableRecognition = new Runnable() {
-        @Override
-        public void run() {
-            bGray = UtilsImages.scaleBitmap(bGray);
-            results = classifier.recognizeImage(bGray);
-            getActivity().runOnUiThread(runnableResult);
-        }
-    }, runnableResult = new Runnable() {
-        @Override
-        public void run() {
-            tvResult.setText(results.toString());
         }
     };
 
@@ -124,20 +99,8 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
 
         View view = inflater.inflate(R.layout.fragment_recognition, container, false);
         ButterKnife.bind(this, view);
-        try {
-            classifier = TensorFlowImageClassifier.create(getContext().getAssets(),
-                    MODEL_FILE,
-                    LABEL_FILE,
-                    INPUT_SIZE,
-                    IMAGE_MEAN,
-                    IMAGE_STD,
-                    INPUT_NAME,
-                    OUTPUT_NAME);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        sbThreshold.setProgress(THRESHOLD);
-        ivSwitchCam.setOnClickListener(new View.OnClickListener() {
+
+        fabSwitchCam.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int cameraIndex = cameraView.getCameraIndex();
@@ -146,27 +109,10 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
                         cameraIndex == CameraView.CAMERA_ID_BACK ? CameraView.CAMERA_ID_FRONT : CameraView.CAMERA_ID_BACK
 
                 );
-                ivSwitchCam.setImageResource(
+                fabSwitchCam.setImageResource(
                         cameraIndex == CameraView.CAMERA_ID_BACK ? R.drawable.ic_camera_front : R.drawable.ic_camera_rear
                 );
                 cameraView.enableView();
-            }
-        });
-        sbThreshold.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                makeToast(progress + "");
-                THRESHOLD = progress;
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                makeToast(seekBar.getProgress() + "");
-                THRESHOLD = seekBar.getProgress();
             }
         });
         return view;
@@ -298,21 +244,11 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
         if (cameraView != null) {
             cameraView.disableView();
         }
-        handlerThread.quitSafely();
-        try {
-            handlerThread.join();
-            handlerThread = null;
-            handler = null;
-        } catch (final InterruptedException e) {
-        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        handlerThread = new HandlerThread("inference");
-        handlerThread.start();
-        handler = new Handler(handlerThread.getLooper());
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_4_0, getContext(), new BaseLoaderCallback(getContext()) {
             @Override
             public void onManagerConnected(int status) {
@@ -327,5 +263,11 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
     public void onDestroy() {
         super.onDestroy();
         cameraView.disableView();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        cameraListener = (CameraListener) context;
     }
 }
