@@ -1,4 +1,4 @@
-package asl.abdelouahed.views;
+package asl.abdelouahed.views.custom;
 
 import android.content.Context;
 import android.hardware.Camera;

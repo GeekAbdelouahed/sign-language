@@ -89,12 +89,12 @@ public abstract class UtilsColorBlobDetector {
         // Find max contour area
         double maxArea = 0;
         Iterator<MatOfPoint> each = contours.iterator();
-        while (each.hasNext()) {
+/*        while (each.hasNext()) {
             MatOfPoint wrapper = each.next();
             double area = Imgproc.contourArea(wrapper);
             if (area > maxArea)
                 maxArea = area;
-        }
+        }*/
 
         // Filter contours by area and resize to fit the original image size
         mContours.clear();

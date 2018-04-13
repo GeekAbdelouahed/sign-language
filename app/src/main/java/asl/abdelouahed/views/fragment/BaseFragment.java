@@ -1,4 +1,4 @@
-package asl.abdelouahed;
+package asl.abdelouahed.views.fragment;
 
 import android.support.v4.app.Fragment;
 import android.widget.Toast;

@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Asl</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="about">حول التطبيق</string>
+    <string name="share">مشاركة التطبيق</string>
+    <string name="title_activity_about">حول التطبيق</string>
+    <string name="action_settings">الإعدادت</string>
+    <string name="about_text">هنا أكتب ما تشاء</string>
 </resources>

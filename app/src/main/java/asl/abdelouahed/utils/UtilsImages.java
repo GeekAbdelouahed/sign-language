@@ -14,6 +14,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.io.ByteArrayOutputStream;
 
+import static asl.abdelouahed.utils.UtilsConstants.GAUSSIAN_BLUR;
 import static asl.abdelouahed.utils.UtilsConstants.INPUT_SIZE;
 import static asl.abdelouahed.utils.UtilsConstants.KERNEL;
 import static asl.abdelouahed.utils.UtilsConstants.MAX_VALUE;
@@ -27,11 +28,14 @@ import static org.opencv.imgproc.Imgproc.THRESH_BINARY;
 public abstract class UtilsImages {
 
     public static void matToBinary(Mat mat) {
+        // convert to binary
         Imgproc.threshold(mat, mat, THRESHOLD, MAX_VALUE, THRESH_BINARY);
         // morphological operation
         Imgproc.erode(mat, mat, KERNEL);
+
+        Imgproc.dilate(mat, mat, KERNEL);
         // Gaussian Filter
-        Imgproc.GaussianBlur(mat, mat, new Size(5, 5), 2);
+        Imgproc.GaussianBlur(mat, mat, new Size(GAUSSIAN_BLUR , GAUSSIAN_BLUR), 0);
     }
 
     public static Bitmap matToBitmap(Mat mat, Rect rect) {

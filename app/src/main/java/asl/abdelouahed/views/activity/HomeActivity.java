@@ -1,12 +1,10 @@
-package asl.abdelouahed;
+package asl.abdelouahed.views.activity;
 
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -15,12 +13,13 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.List;
 
+import asl.abdelouahed.CameraListener;
+import asl.abdelouahed.R;
 import asl.abdelouahed.models.Classifier;
 import asl.abdelouahed.models.TensorFlowImageClassifier;
 import asl.abdelouahed.utils.UtilsTranslate;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 import static asl.abdelouahed.utils.UtilsConstants.IMAGE_MEAN;
 import static asl.abdelouahed.utils.UtilsConstants.IMAGE_STD;
@@ -31,7 +30,7 @@ import static asl.abdelouahed.utils.UtilsConstants.MODEL_FILE;
 import static asl.abdelouahed.utils.UtilsConstants.OUTPUT_NAME;
 import static asl.abdelouahed.utils.UtilsConstants.THRESHOLD;
 
-public class HomeActivity extends AppCompatActivity implements CameraListener {
+public class HomeActivity extends BaseActivity implements CameraListener {
 
     @BindView(R.id.tv_result)
     TextView tvResult;
@@ -45,8 +44,7 @@ public class HomeActivity extends AppCompatActivity implements CameraListener {
     private Bitmap bRgba, bGray;
     private Classifier classifier;
     private List<Classifier.Recognition> results;
-    private Handler handler;
-    private HandlerThread handlerThread;
+
 
     private Runnable runnableRecognition = new Runnable() {
         @Override
@@ -73,6 +71,7 @@ public class HomeActivity extends AppCompatActivity implements CameraListener {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_home);
         ButterKnife.bind(this);
+
         try {
             classifier = TensorFlowImageClassifier.create(getAssets(),
                     MODEL_FILE,
@@ -113,12 +112,6 @@ public class HomeActivity extends AppCompatActivity implements CameraListener {
         runInBackground(runnableRecognition);
     }
 
-    private synchronized void runInBackground(final Runnable r) {
-        if (handler != null) {
-            handler.post(r);
-        }
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -139,8 +132,5 @@ public class HomeActivity extends AppCompatActivity implements CameraListener {
         }
     }
 
-    @Override
-    protected void attachBaseContext(Context context) {
-        super.attachBaseContext(CalligraphyContextWrapper.wrap(context));
-    }
+
 }
