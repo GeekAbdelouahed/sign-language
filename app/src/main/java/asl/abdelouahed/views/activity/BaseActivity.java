@@ -12,7 +12,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
  * Created by abdelouahed on 4/12/18.
  */
 
-public class BaseActivity extends AppCompatActivity {
+public abstract class BaseActivity extends AppCompatActivity {
 
     protected HandlerThread handlerThread;
     protected Handler handler;

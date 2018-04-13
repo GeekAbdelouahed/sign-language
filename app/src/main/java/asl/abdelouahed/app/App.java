@@ -10,7 +10,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
  * Created by abdelouahed on 4/5/18.
  */
 
-public class Asl extends Application {
+public class App extends Application {
 
     @Override
     public void onCreate() {

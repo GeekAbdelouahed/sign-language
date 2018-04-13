@@ -35,7 +35,7 @@ public abstract class UtilsImages {
 
         Imgproc.dilate(mat, mat, KERNEL);
         // Gaussian Filter
-        Imgproc.GaussianBlur(mat, mat, new Size(GAUSSIAN_BLUR , GAUSSIAN_BLUR), 0);
+        Imgproc.GaussianBlur(mat, mat, new Size(GAUSSIAN_BLUR, GAUSSIAN_BLUR), 0);
     }
 
     public static Bitmap matToBitmap(Mat mat, Rect rect) {

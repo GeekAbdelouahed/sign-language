@@ -13,7 +13,7 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.List;
 
-import asl.abdelouahed.CameraListener;
+import asl.abdelouahed.ICameraListener;
 import asl.abdelouahed.R;
 import asl.abdelouahed.models.Classifier;
 import asl.abdelouahed.models.TensorFlowImageClassifier;
@@ -30,16 +30,16 @@ import static asl.abdelouahed.utils.UtilsConstants.MODEL_FILE;
 import static asl.abdelouahed.utils.UtilsConstants.OUTPUT_NAME;
 import static asl.abdelouahed.utils.UtilsConstants.THRESHOLD;
 
-public class HomeActivity extends BaseActivity implements CameraListener {
+public class HomeActivity extends BaseActivity implements ICameraListener {
 
-    @BindView(R.id.tv_result)
-    TextView tvResult;
+    @BindView(R.id.txv_result)
+    TextView txvResult;
     @BindView(R.id.sb_threshold)
     SeekBar sbThreshold;
-    @BindView(R.id.iv_test_rgb_touch)
-    ImageView ivTestRgb;
-    @BindView(R.id.iv_test_gray_touch)
-    ImageView ivTestGray;
+    @BindView(R.id.img_rgba)
+    ImageView imgRgb;
+    @BindView(R.id.img_gray)
+    ImageView imgGray;
 
     private Bitmap bRgba, bGray;
     private Classifier classifier;
@@ -59,7 +59,7 @@ public class HomeActivity extends BaseActivity implements CameraListener {
             if (results.size() > 0) {
                 Classifier.Recognition recognition = results.get(0);
                 String res = UtilsTranslate.translate(recognition.getTitle());
-                tvResult.setText(res);
+                txvResult.setText(res);
             }
         }
     };
@@ -107,8 +107,8 @@ public class HomeActivity extends BaseActivity implements CameraListener {
     public void onFrameChanged(Bitmap bRgba, Bitmap bGray) {
         this.bGray = bGray;
         this.bRgba = bRgba;
-        ivTestRgb.setImageBitmap(bRgba);
-        ivTestGray.setImageBitmap(bGray);
+        imgRgb.setImageBitmap(bRgba);
+        imgGray.setImageBitmap(bGray);
         runInBackground(runnableRecognition);
     }
 

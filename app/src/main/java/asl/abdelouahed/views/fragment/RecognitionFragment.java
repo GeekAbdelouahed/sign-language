@@ -28,7 +28,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
 
-import asl.abdelouahed.CameraListener;
+import asl.abdelouahed.ICameraListener;
 import asl.abdelouahed.R;
 import asl.abdelouahed.utils.UtilsColorBlobDetector;
 import asl.abdelouahed.utils.UtilsImages;
@@ -38,22 +38,19 @@ import butterknife.ButterKnife;
 
 public class RecognitionFragment extends BaseFragment implements OnTouchListener, CvCameraViewListener2 {
 
-    private CameraListener cameraListener;
-    @BindView(R.id.fab_switch_cam_touch)
+    @BindView(R.id.fab_switch_camera)
     FloatingActionButton fabSwitchCam;
-    @BindView(R.id.camera_view_back)
+    @BindView(R.id.camera_view)
     CameraView cameraView;
 
-    private Bitmap bGray, bRgba;
-    private Mat mRgba;
-    private Mat mGray;
-    private boolean isColorSelected = false;
+    private ICameraListener ICameraListener;
+    private Bitmap bRgba, bGray;
+    private Mat mRgba, mGray;
+    private Mat mSpectrum;
     private Rect rBound;
     private Scalar sBlobColorHsv;
-    private Mat mSpectrum;
     private Size spectrumSize;
-    private Scalar contourColor;
-    private Scalar contourColorWhite;
+    private boolean isColorSelected = false;
 
     private final Runnable runnable = new Runnable() {
         @Override
@@ -64,9 +61,10 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
                 bGray = UtilsImages.matToBitmap(mGray, rBound);
                 bGray = UtilsImages.scaleBitmap(bGray);
                 bRgba = UtilsImages.scaleBitmap(bRgba);
-                bGray = UtilsImages.rotateBitmap(bGray, cameraView.getCameraIndex() == CameraView.CAMERA_ID_BACK ? 90 : -90);
-                bRgba = UtilsImages.rotateBitmap(bRgba, cameraView.getCameraIndex() == CameraView.CAMERA_ID_BACK ? 90 : -90);
-                cameraListener.onFrameChanged(bRgba, bGray);
+                int degree = cameraView.getCameraIndex() == CameraView.CAMERA_ID_BACK ? 90 : -90;
+                bGray = UtilsImages.rotateBitmap(bGray, degree);
+                bRgba = UtilsImages.rotateBitmap(bRgba, degree);
+                ICameraListener.onFrameChanged(bRgba, bGray);
 
             } catch (Exception e) {
                 makeToast(e.getMessage());
@@ -75,8 +73,7 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
     };
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_recognition, container, false);
         ButterKnife.bind(this, view);
@@ -85,14 +82,11 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
             @Override
             public void onClick(View v) {
                 int cameraIndex = cameraView.getCameraIndex();
+                int camera_id = cameraIndex == CameraView.CAMERA_ID_BACK ? CameraView.CAMERA_ID_FRONT : CameraView.CAMERA_ID_BACK;
+                int camera_drawable = cameraIndex == CameraView.CAMERA_ID_BACK ? R.drawable.ic_camera_front : R.drawable.ic_camera_rear;
                 cameraView.disableView();
-                cameraView.setCameraIndex(
-                        cameraIndex == CameraView.CAMERA_ID_BACK ? CameraView.CAMERA_ID_FRONT : CameraView.CAMERA_ID_BACK
-
-                );
-                fabSwitchCam.setImageResource(
-                        cameraIndex == CameraView.CAMERA_ID_BACK ? R.drawable.ic_camera_front : R.drawable.ic_camera_rear
-                );
+                cameraView.setCameraIndex(camera_id);
+                fabSwitchCam.setImageResource(camera_drawable);
                 cameraView.enableView();
             }
         });
@@ -110,8 +104,6 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
         mSpectrum = new Mat();
         sBlobColorHsv = new Scalar(255);
         spectrumSize = new Size(200, 64);
-        contourColor = new Scalar(0, 0, 0, 0);
-        contourColorWhite = new Scalar(255, 255, 255, 255);
     }
 
     public boolean onTouch(View v, MotionEvent event) {
@@ -213,6 +205,6 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        cameraListener = (CameraListener) context;
+        ICameraListener = (ICameraListener) context;
     }
 }

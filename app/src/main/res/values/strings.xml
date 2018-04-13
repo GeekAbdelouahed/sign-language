@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Asl</string>
+    <string name="app_name">Sign Language</string>
     <string name="about">حول التطبيق</string>
     <string name="share">مشاركة التطبيق</string>
     <string name="title_activity_about">حول التطبيق</string>

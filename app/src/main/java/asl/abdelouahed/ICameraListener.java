@@ -6,6 +6,6 @@ import android.graphics.Bitmap;
  * Created by abdelouahed on 4/8/18.
  */
 
-public interface CameraListener {
+public interface ICameraListener {
     void onFrameChanged(Bitmap bRgba, Bitmap bGray);
 }
