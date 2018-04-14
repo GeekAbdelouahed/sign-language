@@ -1,10 +1,15 @@
 package asl.abdelouahed.views.fragment;
 
+import android.animation.Animator;
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -36,7 +41,10 @@ import asl.abdelouahed.views.custom.CameraView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+
 public class RecognitionFragment extends BaseFragment implements OnTouchListener, CvCameraViewListener2 {
+
+    private static final String TAG = "TAG:RecognitionFragment";
 
     @BindView(R.id.fab_switch_camera)
     FloatingActionButton fabSwitchCam;
@@ -50,8 +58,17 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
     private Rect rBound;
     private Scalar sBlobColorHsv;
     private Size spectrumSize;
+    private boolean isFront = false;
     private boolean isColorSelected = false;
-
+    private AnimatorSet fabRotate;
+    private Animator.AnimatorListener animatorListener = new AnimatorListenerAdapter() {
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            super.onAnimationEnd(animation);
+            int camera_drawable = isFront ? R.drawable.ic_camera_front : R.drawable.ic_camera_rear;
+            fabSwitchCam.setImageResource(camera_drawable);
+        }
+    };
     private final Runnable runnable = new Runnable() {
         @Override
         public void run() {
@@ -67,7 +84,7 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
                 ICameraListener.onFrameChanged(bRgba, bGray);
 
             } catch (Exception e) {
-                makeToast(e.getMessage());
+                Log.e(TAG, e.getMessage());
             }
         }
     };
@@ -77,22 +94,22 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
 
         View view = inflater.inflate(R.layout.fragment_recognition, container, false);
         ButterKnife.bind(this, view);
-
+        fabRotate = (AnimatorSet) AnimatorInflater.loadAnimator(getActivity(), R.animator.fab_rotate);
+        fabRotate.setTarget(fabSwitchCam);
+        fabRotate.addListener(animatorListener);
         fabSwitchCam.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int cameraIndex = cameraView.getCameraIndex();
-                int camera_id = cameraIndex == CameraView.CAMERA_ID_BACK ? CameraView.CAMERA_ID_FRONT : CameraView.CAMERA_ID_BACK;
-                int camera_drawable = cameraIndex == CameraView.CAMERA_ID_BACK ? R.drawable.ic_camera_front : R.drawable.ic_camera_rear;
+                fabRotate.start();
+                int camera_id = isFront ? CameraView.CAMERA_ID_BACK : CameraView.CAMERA_ID_FRONT;
                 cameraView.disableView();
                 cameraView.setCameraIndex(camera_id);
-                fabSwitchCam.setImageResource(camera_drawable);
                 cameraView.enableView();
+                isFront = !isFront;
             }
         });
         return view;
     }
-
 
     public void onCameraViewStarted(int width, int height) {
         mGray = new Mat();
@@ -135,7 +152,7 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
             touchedRegionRgba.release();
             touchedRegionHsv.release();
         } catch (Exception e) {
-            makeToast(e.getMessage());
+            Log.e(TAG, e.getMessage());
         }
         return false;
     }
@@ -200,6 +217,7 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
     public void onDestroy() {
         super.onDestroy();
         cameraView.disableView();
+        fabRotate.removeListener(animatorListener);
     }
 
     @Override

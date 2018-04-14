@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -31,6 +32,8 @@ import static asl.abdelouahed.utils.UtilsConstants.OUTPUT_NAME;
 import static asl.abdelouahed.utils.UtilsConstants.THRESHOLD;
 
 public class HomeActivity extends BaseActivity implements ICameraListener {
+
+    private static final String TAG = "TAG:HomeActivity";
 
     @BindView(R.id.txv_result)
     TextView txvResult;
@@ -82,7 +85,7 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
                     INPUT_NAME,
                     OUTPUT_NAME);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
 
         sbThreshold.setProgress(THRESHOLD);
