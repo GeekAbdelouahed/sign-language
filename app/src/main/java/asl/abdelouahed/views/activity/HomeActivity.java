@@ -1,12 +1,11 @@
-package asl.abdelouahed;
+package asl.abdelouahed.views.activity;
 
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -15,12 +14,13 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.util.List;
 
+import asl.abdelouahed.ICameraListener;
+import asl.abdelouahed.R;
 import asl.abdelouahed.models.Classifier;
 import asl.abdelouahed.models.TensorFlowImageClassifier;
 import asl.abdelouahed.utils.UtilsTranslate;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 import static asl.abdelouahed.utils.UtilsConstants.IMAGE_MEAN;
 import static asl.abdelouahed.utils.UtilsConstants.IMAGE_STD;
@@ -31,22 +31,23 @@ import static asl.abdelouahed.utils.UtilsConstants.MODEL_FILE;
 import static asl.abdelouahed.utils.UtilsConstants.OUTPUT_NAME;
 import static asl.abdelouahed.utils.UtilsConstants.THRESHOLD;
 
-public class HomeActivity extends AppCompatActivity implements CameraListener {
+public class HomeActivity extends BaseActivity implements ICameraListener {
 
-    @BindView(R.id.tv_result)
-    TextView tvResult;
+    private static final String TAG = "TAG:HomeActivity";
+
+    @BindView(R.id.txv_result)
+    TextView txvResult;
     @BindView(R.id.sb_threshold)
     SeekBar sbThreshold;
-    @BindView(R.id.iv_test_rgb_touch)
-    ImageView ivTestRgb;
-    @BindView(R.id.iv_test_gray_touch)
-    ImageView ivTestGray;
+    @BindView(R.id.img_rgba)
+    ImageView imgRgb;
+    @BindView(R.id.img_gray)
+    ImageView imgGray;
 
     private Bitmap bRgba, bGray;
     private Classifier classifier;
     private List<Classifier.Recognition> results;
-    private Handler handler;
-    private HandlerThread handlerThread;
+
 
     private Runnable runnableRecognition = new Runnable() {
         @Override
@@ -61,7 +62,7 @@ public class HomeActivity extends AppCompatActivity implements CameraListener {
             if (results.size() > 0) {
                 Classifier.Recognition recognition = results.get(0);
                 String res = UtilsTranslate.translate(recognition.getTitle());
-                tvResult.setText(res);
+                txvResult.setText(res);
             }
         }
     };
@@ -73,6 +74,7 @@ public class HomeActivity extends AppCompatActivity implements CameraListener {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_home);
         ButterKnife.bind(this);
+
         try {
             classifier = TensorFlowImageClassifier.create(getAssets(),
                     MODEL_FILE,
@@ -83,7 +85,7 @@ public class HomeActivity extends AppCompatActivity implements CameraListener {
                     INPUT_NAME,
                     OUTPUT_NAME);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
 
         sbThreshold.setProgress(THRESHOLD);
@@ -108,15 +110,9 @@ public class HomeActivity extends AppCompatActivity implements CameraListener {
     public void onFrameChanged(Bitmap bRgba, Bitmap bGray) {
         this.bGray = bGray;
         this.bRgba = bRgba;
-        ivTestRgb.setImageBitmap(bRgba);
-        ivTestGray.setImageBitmap(bGray);
+        imgRgb.setImageBitmap(bRgba);
+        imgGray.setImageBitmap(bGray);
         runInBackground(runnableRecognition);
-    }
-
-    private synchronized void runInBackground(final Runnable r) {
-        if (handler != null) {
-            handler.post(r);
-        }
     }
 
     @Override
@@ -139,8 +135,5 @@ public class HomeActivity extends AppCompatActivity implements CameraListener {
         }
     }
 
-    @Override
-    protected void attachBaseContext(Context context) {
-        super.attachBaseContext(CalligraphyContextWrapper.wrap(context));
-    }
+
 }

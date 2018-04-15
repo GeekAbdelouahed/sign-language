@@ -1,72 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="asl.abdelouahed.HomeActivity">
+    tools:context="asl.abdelouahed.views.activity.HomeActivity">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_above="@id/sb_threshold"
+        android:orientation="vertical">
 
         <fragment
             android:id="@+id/fragment_recognition"
-            android:name="asl.abdelouahed.recognition.RecognitionFragment"
+            android:name="asl.abdelouahed.views.fragment.RecognitionFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="0.25"
             android:background="#dedede" />
 
-        <TextView
-            android:id="@+id/tv_result"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true"
-            android:layout_margin="16dp"
-            android:textColor="#fff"
-            android:textSize="50sp" />
-
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="2.5">
-
-        <SeekBar
-            android:id="@+id/sb_threshold"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_margin="5dp"
-            android:max="500" />
-
         <LinearLayout
-            android:id="@+id/layout_iv_test_touch"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignParentBottom="true"
-            android:layout_below="@id/sb_threshold"
+            android:layout_weight="0.75"
             android:orientation="horizontal">
 
             <ImageView
-                android:id="@+id/iv_test_rgb_touch"
+                android:id="@+id/img_rgba"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_margin="1dp"
-                android:layout_weight="1"
+                android:layout_weight="0.5"
                 android:scaleType="fitXY" />
 
             <ImageView
-                android:id="@+id/iv_test_gray_touch"
+                android:id="@+id/img_gray"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_margin="1dp"
-                android:layout_weight="1"
+                android:layout_weight="0.5"
                 android:scaleType="fitXY" />
 
         </LinearLayout>
-    </RelativeLayout>
-</LinearLayout>
+    </LinearLayout>
+
+    <SeekBar
+        android:id="@+id/sb_threshold"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/txv_result"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
+        android:max="500"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp" />
+
+    <TextView
+        android:id="@+id/txv_result"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentBottom="true"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:padding="5dp"
+        android:textColor="#fff"
+        android:textSize="@dimen/text_size" />
+
+</RelativeLayout>

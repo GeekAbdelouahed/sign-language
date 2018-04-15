@@ -23,7 +23,7 @@ public abstract class UtilsColorBlobDetector {
     // Minimum contour area in percent for contours filtering
     private static double mMinContourArea = 0.1;
     // Color radius for range checking in HSV color space
-    private static Scalar mColorRadius = new Scalar(25,50,50,0);
+    private static Scalar mColorRadius = new Scalar(25, 50, 50, 0);
     private static Mat mSpectrum = new Mat();
     private static List<MatOfPoint> mContours = new ArrayList();
 
@@ -39,8 +39,8 @@ public abstract class UtilsColorBlobDetector {
     }
 
     public static void setHsvColor(Scalar hsvColor) {
-        double minH = (hsvColor.val[0] >= mColorRadius.val[0]) ? hsvColor.val[0]-mColorRadius.val[0] : 0;
-        double maxH = (hsvColor.val[0]+mColorRadius.val[0] <= 255) ? hsvColor.val[0]+mColorRadius.val[0] : 255;
+        double minH = (hsvColor.val[0] >= mColorRadius.val[0]) ? hsvColor.val[0] - mColorRadius.val[0] : 0;
+        double maxH = (hsvColor.val[0] + mColorRadius.val[0] <= 255) ? hsvColor.val[0] + mColorRadius.val[0] : 255;
 
         mLowerBound.val[0] = minH;
         mUpperBound.val[0] = maxH;
@@ -54,10 +54,10 @@ public abstract class UtilsColorBlobDetector {
         mLowerBound.val[3] = 0;
         mUpperBound.val[3] = 255;
 
-        Mat spectrumHsv = new Mat(1, (int)(maxH-minH), CvType.CV_8UC3);
+        Mat spectrumHsv = new Mat(1, (int) (maxH - minH), CvType.CV_8UC3);
 
-        for (int j = 0; j < maxH-minH; j++) {
-            byte[] tmp = {(byte)(minH+j), (byte)255, (byte)255};
+        for (int j = 0; j < maxH - minH; j++) {
+            byte[] tmp = {(byte) (minH + j), (byte) 255, (byte) 255};
             spectrumHsv.put(0, j, tmp);
         }
 
@@ -101,8 +101,8 @@ public abstract class UtilsColorBlobDetector {
         each = contours.iterator();
         while (each.hasNext()) {
             MatOfPoint contour = each.next();
-            if (Imgproc.contourArea(contour) > mMinContourArea*maxArea) {
-                Core.multiply(contour, new Scalar(4,4), contour);
+            if (Imgproc.contourArea(contour) > mMinContourArea * maxArea) {
+                Core.multiply(contour, new Scalar(4, 4), contour);
                 mContours.add(contour);
             }
         }

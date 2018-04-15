@@ -1,4 +1,4 @@
-package asl.abdelouahed.views;
+package asl.abdelouahed.views.custom;
 
 import android.content.Context;
 import android.hardware.Camera;
@@ -40,12 +40,12 @@ public class CameraView extends JavaCameraView {
         mCamera.setParameters(params);
     }
 
-    public Camera.Parameters getParameters(){
+    public Camera.Parameters getParameters() {
         Camera.Parameters params = mCamera.getParameters();
         return params;
     }
 
-    public void setParameters(Camera.Parameters params){
+    public void setParameters(Camera.Parameters params) {
         mCamera.setParameters(params);
     }
 
