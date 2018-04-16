@@ -32,7 +32,6 @@ public abstract class UtilsImages {
         Imgproc.threshold(mat, mat, THRESHOLD, MAX_VALUE, THRESH_BINARY);
         // morphological operation
         Imgproc.erode(mat, mat, KERNEL);
-
         Imgproc.dilate(mat, mat, KERNEL);
         // Gaussian Filter
         Imgproc.GaussianBlur(mat, mat, new Size(GAUSSIAN_BLUR, GAUSSIAN_BLUR), 0);
@@ -49,31 +48,15 @@ public abstract class UtilsImages {
         }
     }
 
-    public static Scalar convertScalarHsv2Rgba(Scalar hsvColor) {
-        Mat pointMatRgba = new Mat();
-        Mat pointMatHsv = new Mat(1, 1, CvType.CV_8UC3, hsvColor);
-        Imgproc.cvtColor(pointMatHsv, pointMatRgba, Imgproc.COLOR_HSV2RGB_FULL, 4);
-
-        return new Scalar(pointMatRgba.get(0, 0));
-    }
-
-    public static double[] matToPixels(Mat mat) {
-        MatOfDouble matOfDouble = new MatOfDouble(CvType.CV_64F);
-        mat.convertTo(matOfDouble, CvType.CV_64F);
-        double[] pixels = new double[(int) (matOfDouble.total() * matOfDouble.channels())];
-        matOfDouble.get(0, 0, pixels);
-        return pixels;
-    }
-
     public static Bitmap scaleBitmap(Bitmap bitmap) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
         return Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, false);
     }
 
-    public static Bitmap rotateBitmap(Bitmap bitmap, int degrees) {
+    public static Bitmap rotateBitmap(Bitmap bitmap, float degrees) {
         Matrix matrix = new Matrix();
-        matrix.postRotate(degrees);
+        matrix.setRotate(degrees);
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
 }
