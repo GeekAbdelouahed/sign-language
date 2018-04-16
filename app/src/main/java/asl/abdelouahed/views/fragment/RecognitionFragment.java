@@ -78,7 +78,7 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
                 bGray = UtilsImages.matToBitmap(mGray, rBound);
                 bGray = UtilsImages.scaleBitmap(bGray);
                 bRgba = UtilsImages.scaleBitmap(bRgba);
-                int degree = cameraView.getCameraIndex() == CameraView.CAMERA_ID_BACK ? 90 : -90;
+                float degree = isFront ? -90 : 90;
                 bGray = UtilsImages.rotateBitmap(bGray, degree);
                 bRgba = UtilsImages.rotateBitmap(bRgba, degree);
                 ICameraListener.onFrameChanged(bRgba, bGray);
