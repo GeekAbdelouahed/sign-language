@@ -14,6 +14,8 @@ public abstract class UtilsConstants {
     public static final int IMAGE_MEAN = 128;
     public static final float IMAGE_STD = 128f;
 
+    public static double MIN_CONFIDENCE = 0.4;
+
     public static final String INPUT_NAME = "Mul";
     public static final String OUTPUT_NAME = "final_result";
     public static final String MODEL_FILE = "file:///android_asset/output_graph.pb";

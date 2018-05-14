@@ -5,13 +5,12 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.util.List;
 
 import asl.abdelouahed.ICameraListener;
@@ -27,6 +26,7 @@ import static asl.abdelouahed.utils.UtilsConstants.IMAGE_STD;
 import static asl.abdelouahed.utils.UtilsConstants.INPUT_NAME;
 import static asl.abdelouahed.utils.UtilsConstants.INPUT_SIZE;
 import static asl.abdelouahed.utils.UtilsConstants.LABEL_FILE;
+import static asl.abdelouahed.utils.UtilsConstants.MIN_CONFIDENCE;
 import static asl.abdelouahed.utils.UtilsConstants.MODEL_FILE;
 import static asl.abdelouahed.utils.UtilsConstants.OUTPUT_NAME;
 import static asl.abdelouahed.utils.UtilsConstants.THRESHOLD;
@@ -44,10 +44,12 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
     @BindView(R.id.img_gray)
     ImageView imgGray;
 
-    private Bitmap bRgba, bGray;
-    private Classifier classifier;
     private List<Classifier.Recognition> results;
-
+    private Classifier classifier;
+    private Bitmap bRgba, bGray;
+    private String targetWord = "";
+    private String ch = "";
+    private int count = 0;
 
     private Runnable runnableRecognition = new Runnable() {
         @Override
@@ -59,10 +61,22 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
     private Runnable runnableResult = new Runnable() {
         @Override
         public void run() {
-            if (results.size() > 0) {
+            if (!results.isEmpty()) {
                 Classifier.Recognition recognition = results.get(0);
-                String res = UtilsTranslate.translate(recognition.getTitle());
-                txvResult.setText(res);
+                String res = (recognition.getConfidence() >= MIN_CONFIDENCE) ? UtilsTranslate.translate(recognition.getTitle()) : "";
+                if (res.equals(ch) || ch.isEmpty()) {
+                    count++;
+                    ch = res;
+                } else {
+                    ch = res;
+                    count = 1;
+                }
+                if (count == 3) {
+                    ch = "";
+                    count = 0;
+                }
+                targetWord += res;
+                txvResult.setText(targetWord);
             }
         }
     };
@@ -75,18 +89,14 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
         setContentView(R.layout.activity_home);
         ButterKnife.bind(this);
 
-        try {
-            classifier = TensorFlowImageClassifier.create(getAssets(),
-                    MODEL_FILE,
-                    LABEL_FILE,
-                    INPUT_SIZE,
-                    IMAGE_MEAN,
-                    IMAGE_STD,
-                    INPUT_NAME,
-                    OUTPUT_NAME);
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
-        }
+        classifier = TensorFlowImageClassifier.create(getAssets(),
+                MODEL_FILE,
+                LABEL_FILE,
+                INPUT_SIZE,
+                IMAGE_MEAN,
+                IMAGE_STD,
+                INPUT_NAME,
+                OUTPUT_NAME);
 
         sbThreshold.setProgress(THRESHOLD);
         sbThreshold.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -102,6 +112,17 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 THRESHOLD = seekBar.getProgress();
+            }
+        });
+
+        txvResult.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                count = 0;
+                ch = "";
+                targetWord = "";
+                txvResult.setText(targetWord);
+                return false;
             }
         });
     }
