@@ -4,7 +4,10 @@ package asl.abdelouahed.utils;
  * Created by abdelouahed on 4/8/18.
  */
 
-public abstract class UtilsTranslate {
+public class UtilsTranslate {
+
+    private UtilsTranslate() {
+    }
 
     public static String translate(String value) {
         switch (value) {
