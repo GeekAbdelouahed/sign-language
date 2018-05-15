@@ -8,7 +8,10 @@ import org.opencv.imgproc.Imgproc;
  * Created by abdelouahed on 2/15/18.
  */
 
-public abstract class UtilsConstants {
+public class UtilsConstants {
+
+    private UtilsConstants() {
+    }
 
     public static final int INPUT_SIZE = 299;
     public static final int IMAGE_MEAN = 128;
@@ -23,7 +26,7 @@ public abstract class UtilsConstants {
 
     public static final int GAUSSIAN_BLUR = 3;
     public static final Mat KERNEL = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2, 2));
-    public static int THRESHOLD = 250;
+    public static int THRESHOLD = 150;
     public static final double MAX_VALUE = 255;
 
 }

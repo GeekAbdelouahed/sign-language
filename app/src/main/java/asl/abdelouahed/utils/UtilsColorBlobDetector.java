@@ -15,7 +15,10 @@ import java.util.List;
  * Created by abdelouahed on 2/9/18.
  */
 
-public abstract class UtilsColorBlobDetector {
+public class UtilsColorBlobDetector {
+
+    private UtilsColorBlobDetector() {
+    }
 
     // Lower and Upper bounds for range checking in HSV color space
     private static Scalar mLowerBound = new Scalar(0);

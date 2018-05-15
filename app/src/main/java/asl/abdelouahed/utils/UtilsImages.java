@@ -4,11 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 
 import org.opencv.android.Utils;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfDouble;
 import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
@@ -25,7 +22,10 @@ import static org.opencv.imgproc.Imgproc.THRESH_BINARY;
  * Created by abdelouahed on 2/15/18.
  */
 
-public abstract class UtilsImages {
+public class UtilsImages {
+
+    public UtilsImages() {
+    }
 
     public static void matToBinary(Mat mat) {
         // convert to binary
