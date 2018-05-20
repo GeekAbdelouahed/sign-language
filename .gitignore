@@ -2,8 +2,7 @@
 *.apk
 *.ap_
 
-#opencv library
-openCVLibrary340/
+#opencv arhc
 app/src/main/jniLibs/
 
 # Files for the ART/Dalvik VM
