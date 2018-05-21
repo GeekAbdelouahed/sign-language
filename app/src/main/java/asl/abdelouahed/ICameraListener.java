@@ -8,4 +8,6 @@ import android.graphics.Bitmap;
 
 public interface ICameraListener {
     void onFrameChanged(Bitmap bRgba, Bitmap bGray);
+
+    int onGetThreshold();
 }

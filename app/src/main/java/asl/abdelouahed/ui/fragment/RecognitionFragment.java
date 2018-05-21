@@ -1,4 +1,4 @@
-package asl.abdelouahed.views.fragment;
+package asl.abdelouahed.ui.fragment;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
@@ -35,9 +35,9 @@ import java.util.List;
 
 import asl.abdelouahed.ICameraListener;
 import asl.abdelouahed.R;
+import asl.abdelouahed.ui.custom.CameraView;
 import asl.abdelouahed.utils.UtilsColorBlobDetector;
 import asl.abdelouahed.utils.UtilsImages;
-import asl.abdelouahed.views.custom.CameraView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -161,7 +161,8 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
         // gray to binary
-        UtilsImages.matToBinary(mGray);
+        int thresold = ICameraListener.onGetThreshold();
+        UtilsImages.matToBinary(mGray, thresold);
         UtilsColorBlobDetector.process(mRgba);
         if (!isColorSelected)
             return mRgba;

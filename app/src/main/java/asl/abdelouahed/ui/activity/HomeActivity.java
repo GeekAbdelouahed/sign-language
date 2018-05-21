@@ -1,4 +1,4 @@
-package asl.abdelouahed.views.activity;
+package asl.abdelouahed.ui.activity;
 
 
 import android.graphics.Bitmap;
@@ -29,7 +29,6 @@ import static asl.abdelouahed.utils.UtilsConstants.LABEL_FILE;
 import static asl.abdelouahed.utils.UtilsConstants.MIN_CONFIDENCE;
 import static asl.abdelouahed.utils.UtilsConstants.MODEL_FILE;
 import static asl.abdelouahed.utils.UtilsConstants.OUTPUT_NAME;
-import static asl.abdelouahed.utils.UtilsConstants.THRESHOLD;
 
 public class HomeActivity extends BaseActivity implements ICameraListener {
 
@@ -49,6 +48,7 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
     private Bitmap bRgba, bGray;
     private String targetWord = "";
     private String ch = "";
+    private int threshold = 150;
     private int count = 0;
 
     private Runnable runnableRecognition = new Runnable() {
@@ -98,11 +98,11 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
                 INPUT_NAME,
                 OUTPUT_NAME);
 
-        sbThreshold.setProgress(THRESHOLD);
+        sbThreshold.setProgress(threshold);
         sbThreshold.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                THRESHOLD = progress;
+                threshold = progress;
             }
 
             @Override
@@ -111,7 +111,7 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                THRESHOLD = seekBar.getProgress();
+                threshold = seekBar.getProgress();
             }
         });
 
@@ -134,6 +134,11 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
         imgRgb.setImageBitmap(bRgba);
         imgGray.setImageBitmap(bGray);
         runInBackground(runnableRecognition);
+    }
+
+    @Override
+    public int onGetThreshold() {
+        return threshold;
     }
 
     @Override

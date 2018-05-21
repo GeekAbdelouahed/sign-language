@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="asl.abdelouahed.views.activity.HomeActivity">
+    tools:context="asl.abdelouahed.ui.activity.HomeActivity">
 
-    <asl.abdelouahed.views.custom.CameraView
+    <asl.abdelouahed.ui.custom.CameraView
         android:id="@+id/camera_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

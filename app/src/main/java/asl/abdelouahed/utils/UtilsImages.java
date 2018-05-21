@@ -15,7 +15,6 @@ import static asl.abdelouahed.utils.UtilsConstants.GAUSSIAN_BLUR;
 import static asl.abdelouahed.utils.UtilsConstants.INPUT_SIZE;
 import static asl.abdelouahed.utils.UtilsConstants.KERNEL;
 import static asl.abdelouahed.utils.UtilsConstants.MAX_VALUE;
-import static asl.abdelouahed.utils.UtilsConstants.THRESHOLD;
 import static org.opencv.imgproc.Imgproc.THRESH_BINARY;
 
 /**
@@ -27,9 +26,9 @@ public class UtilsImages {
     public UtilsImages() {
     }
 
-    public static void matToBinary(Mat mat) {
+    public static void matToBinary(Mat mat, int threshold) {
         // convert to binary
-        Imgproc.threshold(mat, mat, THRESHOLD, MAX_VALUE, THRESH_BINARY);
+        Imgproc.threshold(mat, mat, threshold, MAX_VALUE, THRESH_BINARY);
         // morphological operation
         Imgproc.erode(mat, mat, KERNEL);
         Imgproc.dilate(mat, mat, KERNEL);

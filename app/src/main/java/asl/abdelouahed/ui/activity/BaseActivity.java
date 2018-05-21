@@ -1,4 +1,4 @@
-package asl.abdelouahed.views.activity;
+package asl.abdelouahed.ui.activity;
 
 import android.content.Context;
 import android.os.Handler;
