@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -20,6 +19,7 @@ import asl.abdelouahed.models.TensorFlowImageClassifier;
 import asl.abdelouahed.utils.UtilsTranslate;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 import static asl.abdelouahed.utils.UtilsConstants.IMAGE_MEAN;
 import static asl.abdelouahed.utils.UtilsConstants.IMAGE_STD;
@@ -114,17 +114,14 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
                 threshold = seekBar.getProgress();
             }
         });
+    }
 
-        txvResult.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                count = 0;
-                ch = "";
-                targetWord = "";
-                txvResult.setText(targetWord);
-                return false;
-            }
-        });
+    @OnClick(R.id.img_clear)
+    public void onClickClear() {
+        count = 0;
+        ch = "";
+        targetWord = "";
+        txvResult.setText(targetWord);
     }
 
     @Override
