@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -42,7 +43,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class RecognitionFragment extends BaseFragment implements OnTouchListener, CvCameraViewListener2 {
+public class RecognitionFragment extends Fragment implements OnTouchListener, CvCameraViewListener2 {
 
     private static final String TAG = "TAG:RecognitionFragment";
 
@@ -52,8 +53,8 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
     CameraView cameraView;
 
     private ICameraListener ICameraListener;
-    private Bitmap bRgba, bGray;
     private Mat mRgba, mGray;
+    private Bitmap bGray;
     private Mat mSpectrum;
     private Rect rBound;
     private Scalar sBlobColorHsv;
@@ -74,14 +75,17 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
         public void run() {
             try {
 
-                bRgba = UtilsImages.matToBitmap(mRgba, rBound);
-                bGray = UtilsImages.matToBitmap(mGray, rBound);
-                bGray = UtilsImages.scaleBitmap(bGray);
-                bRgba = UtilsImages.scaleBitmap(bRgba);
-                float degree = isFront ? -90 : 90;
-                bGray = UtilsImages.rotateBitmap(bGray, degree);
-                bRgba = UtilsImages.rotateBitmap(bRgba, degree);
-                ICameraListener.onFrameChanged(bRgba, bGray);
+                Bitmap bGray = UtilsImages.matToBitmap(mGray, rBound);
+                if (RecognitionFragment.this.bGray == null || !RecognitionFragment.this.bGray.sameAs(bGray)) {
+                    Bitmap bRgba = UtilsImages.matToBitmap(mRgba, rBound);
+                    RecognitionFragment.this.bGray = bGray;
+                    bGray = UtilsImages.scaleBitmap(bGray);
+                    bRgba = UtilsImages.scaleBitmap(bRgba);
+                    float degree = isFront ? -90 : 90;
+                    bGray = UtilsImages.rotateBitmap(bGray, degree);
+                    bRgba = UtilsImages.rotateBitmap(bRgba, degree);
+                    ICameraListener.onFrameChanged(bRgba, bGray);
+                }
 
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
@@ -161,8 +165,8 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
         // gray to binary
-        int thresold = ICameraListener.onGetThreshold();
-        UtilsImages.matToBinary(mGray, thresold);
+        int threshold = ICameraListener.onGetThreshold();
+        UtilsImages.matToBinary(mGray, threshold);
         UtilsColorBlobDetector.process(mRgba);
         if (!isColorSelected)
             return mRgba;
@@ -194,11 +198,9 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        if (cameraView != null) {
-            cameraView.disableView();
-        }
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        ICameraListener = (ICameraListener) context;
     }
 
     @Override
@@ -215,15 +217,18 @@ public class RecognitionFragment extends BaseFragment implements OnTouchListener
         });
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (cameraView != null) {
+            cameraView.disableView();
+        }
+    }
+
     public void onDestroy() {
         super.onDestroy();
         cameraView.disableView();
         fabRotate.removeListener(animatorListener);
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        ICameraListener = (ICameraListener) context;
-    }
 }

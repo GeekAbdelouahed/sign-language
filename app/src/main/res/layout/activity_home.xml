@@ -19,29 +19,32 @@
             android:layout_weight="0.25"
             android:background="#dedede" />
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="0.75"
-            android:orientation="horizontal">
+            android:layout_weight="0.75">
 
             <ImageView
                 android:id="@+id/img_rgba"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_margin="1dp"
-                android:layout_weight="0.5"
-                android:scaleType="fitXY" />
+                android:layout_toStartOf="@id/view_split" />
+
+            <View
+                android:id="@+id/view_split"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true" />
 
             <ImageView
                 android:id="@+id/img_gray"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_margin="1dp"
-                android:layout_weight="0.5"
-                android:scaleType="fitXY" />
+                android:layout_toEndOf="@id/view_split" />
 
-        </LinearLayout>
+        </RelativeLayout>
     </LinearLayout>
 
     <SeekBar

@@ -14,8 +14,8 @@ import java.util.List;
 
 import asl.abdelouahed.ICameraListener;
 import asl.abdelouahed.R;
-import asl.abdelouahed.models.Classifier;
-import asl.abdelouahed.models.TensorFlowImageClassifier;
+import asl.abdelouahed.model.Classifier;
+import asl.abdelouahed.model.TensorFlowImageClassifier;
 import asl.abdelouahed.utils.UtilsTranslate;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,40 +46,8 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
     private List<Classifier.Recognition> results;
     private Classifier classifier;
     private Bitmap bRgba, bGray;
-    private String targetWord = "";
-    private String ch = "";
+    private String resultWord = "", currentChar = "";
     private int threshold = 150;
-    private int count = 0;
-
-    private Runnable runnableRecognition = new Runnable() {
-        @Override
-        public void run() {
-            results = classifier.recognizeImage(bGray);
-            runOnUiThread(runnableResult);
-        }
-    };
-    private Runnable runnableResult = new Runnable() {
-        @Override
-        public void run() {
-            if (!results.isEmpty()) {
-                Classifier.Recognition recognition = results.get(0);
-                String res = (recognition.getConfidence() >= MIN_CONFIDENCE) ? UtilsTranslate.translate(recognition.getTitle()) : "";
-                if (res.equals(ch) || ch.isEmpty()) {
-                    count++;
-                    ch = res;
-                } else {
-                    ch = res;
-                    count = 1;
-                }
-                if (count == 3) {
-                    ch = "";
-                    count = 0;
-                }
-                targetWord += res;
-                txvResult.setText(targetWord);
-            }
-        }
-    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -118,10 +86,9 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
 
     @OnClick(R.id.img_clear)
     public void onClickClear() {
-        count = 0;
-        ch = "";
-        targetWord = "";
-        txvResult.setText(targetWord);
+        currentChar = "";
+        resultWord = "";
+        txvResult.setText(resultWord);
     }
 
     @Override
@@ -132,6 +99,28 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
         imgGray.setImageBitmap(bGray);
         runInBackground(runnableRecognition);
     }
+
+    private Runnable runnableRecognition = new Runnable() {
+        @Override
+        public void run() {
+            results = classifier.recognizeImage(bGray);
+            runOnUiThread(runnableResult);
+        }
+    };
+    private Runnable runnableResult = new Runnable() {
+        @Override
+        public void run() {
+            if (!results.isEmpty()) {
+                Classifier.Recognition recognition = results.get(0);
+                String res = (recognition.getConfidence() >= MIN_CONFIDENCE) ? UtilsTranslate.translate(recognition.getTitle()) : "";
+                if (!res.equals(currentChar) || currentChar.isEmpty()) {
+                    currentChar = res;
+                    resultWord += res;
+                    txvResult.setText(resultWord);
+                }
+            }
+        }
+    };
 
     @Override
     public int onGetThreshold() {
@@ -155,6 +144,7 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
             handlerThread = null;
             handler = null;
         } catch (final InterruptedException e) {
+            e.printStackTrace();
         }
     }
 

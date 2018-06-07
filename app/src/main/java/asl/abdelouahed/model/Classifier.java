@@ -1,4 +1,4 @@
-package asl.abdelouahed.models;
+package asl.abdelouahed.model;
 
 import android.graphics.Bitmap;
 import android.graphics.RectF;

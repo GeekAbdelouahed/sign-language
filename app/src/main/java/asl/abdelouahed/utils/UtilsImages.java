@@ -13,7 +13,6 @@ import java.io.ByteArrayOutputStream;
 
 import static asl.abdelouahed.utils.UtilsConstants.GAUSSIAN_BLUR;
 import static asl.abdelouahed.utils.UtilsConstants.INPUT_SIZE;
-import static asl.abdelouahed.utils.UtilsConstants.KERNEL;
 import static asl.abdelouahed.utils.UtilsConstants.MAX_VALUE;
 import static org.opencv.imgproc.Imgproc.THRESH_BINARY;
 
@@ -27,11 +26,12 @@ public class UtilsImages {
     }
 
     public static void matToBinary(Mat mat, int threshold) {
+        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2, 2));
         // convert to binary
         Imgproc.threshold(mat, mat, threshold, MAX_VALUE, THRESH_BINARY);
         // morphological operation
-        Imgproc.erode(mat, mat, KERNEL);
-        Imgproc.dilate(mat, mat, KERNEL);
+        Imgproc.erode(mat, mat, kernel);
+        Imgproc.dilate(mat, mat, kernel);
         // Gaussian Filter
         Imgproc.GaussianBlur(mat, mat, new Size(GAUSSIAN_BLUR, GAUSSIAN_BLUR), 0);
     }

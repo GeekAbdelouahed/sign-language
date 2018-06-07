@@ -1,9 +1,8 @@
-package asl.abdelouahed.models;
+package asl.abdelouahed.model;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.os.Trace;
-import android.support.v4.os.TraceCompat;
 import android.util.Log;
 
 import org.tensorflow.Operation;
