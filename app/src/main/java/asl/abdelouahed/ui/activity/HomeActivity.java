@@ -3,9 +3,6 @@ package asl.abdelouahed.ui.activity;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -127,25 +124,20 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
     }
 
     @Override
+    public void onRestartHandler() {
+        removeRunnable(runnableRecognition);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
-        handlerThread = new HandlerThread("inference");
-        handlerThread.start();
-        handler = new Handler(handlerThread.getLooper());
+        startHandler();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        handlerThread.quitSafely();
-        try {
-            handlerThread.join();
-            handlerThread = null;
-            handler = null;
-        } catch (final InterruptedException e) {
-            e.printStackTrace();
-        }
+        stopHandler();
     }
-
 
 }

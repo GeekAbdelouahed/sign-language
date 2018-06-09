@@ -10,4 +10,6 @@ public interface ICameraListener {
     void onFrameChanged(Bitmap bRgba, Bitmap bGray);
 
     int onGetThreshold();
+
+    void onRestartHandler();
 }

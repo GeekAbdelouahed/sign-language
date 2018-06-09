@@ -22,6 +22,27 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
+    protected void startHandler() {
+        handlerThread = new HandlerThread("inference");
+        handlerThread.start();
+        handler = new Handler(handlerThread.getLooper());
+    }
+
+    protected void stopHandler() {
+        handlerThread.quitSafely();
+        try {
+            handlerThread.join();
+            handlerThread = null;
+            handler = null;
+        } catch (final InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void removeRunnable(Runnable r) {
+        handler.removeCallbacks(r);
+    }
+
     @Override
     protected void attachBaseContext(Context context) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(context));

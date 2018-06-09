@@ -47,19 +47,20 @@ public class TensorFlowImageClassifier implements Classifier {
 
     private TensorFlowInferenceInterface inferenceInterface;
 
-    private TensorFlowImageClassifier() {}
+    private TensorFlowImageClassifier() {
+    }
 
     /**
      * Initializes a native TensorFlow session for classifying images.
      *
-     * @param assetManager The asset manager to be used to load assets.
+     * @param assetManager  The asset manager to be used to load assets.
      * @param modelFilename The filepath of the model GraphDef protocol buffer.
      * @param labelFilename The filepath of label file for classes.
-     * @param inputSize The input size. A square image of inputSize x inputSize is assumed.
-     * @param imageMean The assumed mean of the image values.
-     * @param imageStd The assumed std of the image values.
-     * @param inputName The label of the image input node.
-     * @param outputName The label of the output node.
+     * @param inputSize     The input size. A square image of inputSize x inputSize is assumed.
+     * @param imageMean     The assumed mean of the image values.
+     * @param imageStd      The assumed std of the image values.
+     * @param inputName     The label of the image input node.
+     * @param outputName    The label of the output node.
      * @throws IOException
      */
     public static Classifier create(
@@ -88,7 +89,7 @@ public class TensorFlowImageClassifier implements Classifier {
             }
             br.close();
         } catch (IOException e) {
-            throw new RuntimeException("Problem reading label file!" , e);
+            throw new RuntimeException("Problem reading label file!", e);
         }
 
         c.inferenceInterface = new TensorFlowInferenceInterface(assetManager, modelFilename);
@@ -106,7 +107,7 @@ public class TensorFlowImageClassifier implements Classifier {
         c.imageStd = imageStd;
 
         // Pre-allocate buffers.
-        c.outputNames = new String[] {outputName};
+        c.outputNames = new String[]{outputName};
         c.intValues = new int[inputSize * inputSize];
         c.floatValues = new float[inputSize * inputSize * 3];
         c.outputs = new float[numClasses];

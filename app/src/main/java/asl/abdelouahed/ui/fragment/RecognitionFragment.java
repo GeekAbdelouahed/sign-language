@@ -52,7 +52,7 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
     @BindView(R.id.camera_view)
     CameraView cameraView;
 
-    private ICameraListener ICameraListener;
+    private ICameraListener listener;
     private Mat mRgba, mGray;
     private Mat mSpectrum;
     private Rect rBound;
@@ -81,7 +81,7 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
                 float degree = isFront ? -90 : 90;
                 bGray = UtilsImages.rotateBitmap(bGray, degree);
                 bRgba = UtilsImages.rotateBitmap(bRgba, degree);
-                ICameraListener.onFrameChanged(bRgba, bGray);
+                listener.onFrameChanged(bRgba, bGray);
 
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
@@ -124,6 +124,7 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
     }
 
     public boolean onTouch(View v, MotionEvent event) {
+        listener.onRestartHandler();
         try {
             int cols = mRgba.cols();
             int rows = mRgba.rows();
@@ -161,7 +162,7 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
         // gray to binary
-        int threshold = ICameraListener.onGetThreshold();
+        int threshold = listener.onGetThreshold();
         UtilsImages.matToBinary(mGray, threshold);
         UtilsColorBlobDetector.process(mRgba);
         if (!isColorSelected)
@@ -196,7 +197,7 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        ICameraListener = (ICameraListener) context;
+        listener = (ICameraListener) context;
     }
 
     @Override
