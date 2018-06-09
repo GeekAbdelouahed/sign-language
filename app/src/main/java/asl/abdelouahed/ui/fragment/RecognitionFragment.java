@@ -54,7 +54,6 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
 
     private ICameraListener ICameraListener;
     private Mat mRgba, mGray;
-    private Bitmap bGray;
     private Mat mSpectrum;
     private Rect rBound;
     private Scalar sBlobColorHsv;
@@ -76,16 +75,13 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
             try {
 
                 Bitmap bGray = UtilsImages.matToBitmap(mGray, rBound);
-                if (RecognitionFragment.this.bGray == null || !RecognitionFragment.this.bGray.sameAs(bGray)) {
-                    Bitmap bRgba = UtilsImages.matToBitmap(mRgba, rBound);
-                    RecognitionFragment.this.bGray = bGray;
-                    bGray = UtilsImages.scaleBitmap(bGray);
-                    bRgba = UtilsImages.scaleBitmap(bRgba);
-                    float degree = isFront ? -90 : 90;
-                    bGray = UtilsImages.rotateBitmap(bGray, degree);
-                    bRgba = UtilsImages.rotateBitmap(bRgba, degree);
-                    ICameraListener.onFrameChanged(bRgba, bGray);
-                }
+                Bitmap bRgba = UtilsImages.matToBitmap(mRgba, rBound);
+                bGray = UtilsImages.scaleBitmap(bGray);
+                bRgba = UtilsImages.scaleBitmap(bRgba);
+                float degree = isFront ? -90 : 90;
+                bGray = UtilsImages.rotateBitmap(bGray, degree);
+                bRgba = UtilsImages.rotateBitmap(bRgba, degree);
+                ICameraListener.onFrameChanged(bRgba, bGray);
 
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());

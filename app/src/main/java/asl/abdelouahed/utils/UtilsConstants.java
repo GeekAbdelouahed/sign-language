@@ -13,7 +13,7 @@ public class UtilsConstants {
     public static final int IMAGE_MEAN = 128;
     public static final float IMAGE_STD = 128f;
 
-    public static final double MIN_CONFIDENCE = 0.25;
+    public static final double MIN_CONFIDENCE = 0.4;
 
     public static final String INPUT_NAME = "Mul";
     public static final String OUTPUT_NAME = "final_result";

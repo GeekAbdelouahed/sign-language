@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -46,7 +47,7 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
     private List<Classifier.Recognition> results;
     private Classifier classifier;
     private Bitmap bRgba, bGray;
-    private String resultWord = "", currentChar = "";
+    private String resultWord = "";
     private int threshold = 150;
 
     @Override
@@ -86,7 +87,6 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
 
     @OnClick(R.id.img_clear)
     public void onClickClear() {
-        currentChar = "";
         resultWord = "";
         txvResult.setText(resultWord);
     }
@@ -112,10 +112,9 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
         public void run() {
             if (!results.isEmpty()) {
                 Classifier.Recognition recognition = results.get(0);
-                String res = (recognition.getConfidence() >= MIN_CONFIDENCE) ? UtilsTranslate.translate(recognition.getTitle()) : "";
-                if (!res.equals(currentChar) || currentChar.isEmpty()) {
-                    currentChar = res;
-                    resultWord += res;
+                String resultChar = (recognition.getConfidence() >= MIN_CONFIDENCE) ? UtilsTranslate.translate(recognition.getTitle()) : "";
+                if (!resultWord.endsWith(resultChar)) {
+                    resultWord += resultChar;
                     txvResult.setText(resultWord);
                 }
             }
