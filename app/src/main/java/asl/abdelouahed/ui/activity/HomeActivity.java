@@ -1,12 +1,20 @@
 package asl.abdelouahed.ui.activity;
 
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import com.github.ybq.android.spinkit.SpinKitView;
+import com.github.ybq.android.spinkit.sprite.Sprite;
 
 import java.util.List;
 
@@ -18,7 +26,10 @@ import asl.abdelouahed.utils.UtilsTranslate;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnLongClick;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
+import static asl.abdelouahed.utils.UtilsConstants.DELAY_RECOGNITION;
 import static asl.abdelouahed.utils.UtilsConstants.IMAGE_MEAN;
 import static asl.abdelouahed.utils.UtilsConstants.IMAGE_STD;
 import static asl.abdelouahed.utils.UtilsConstants.INPUT_NAME;
@@ -28,24 +39,29 @@ import static asl.abdelouahed.utils.UtilsConstants.MIN_CONFIDENCE;
 import static asl.abdelouahed.utils.UtilsConstants.MODEL_FILE;
 import static asl.abdelouahed.utils.UtilsConstants.OUTPUT_NAME;
 
-public class HomeActivity extends BaseActivity implements ICameraListener {
+public class HomeActivity extends AppCompatActivity implements ICameraListener {
 
     private static final String TAG = "TAG:HomeActivity";
 
     @BindView(R.id.txv_result)
-    TextView txvResult;
+    TextView resultText;
     @BindView(R.id.sb_threshold)
-    SeekBar sbThreshold;
+    SeekBar thresholdSeekBar;
     @BindView(R.id.img_rgba)
-    ImageView imgRgb;
+    ImageView rgbaImage;
     @BindView(R.id.img_gray)
-    ImageView imgGray;
+    ImageView grayImage;
+    @BindView(R.id.spin_kit)
+    SpinKitView spinKitView;
 
-    private List<Classifier.Recognition> results;
+    private HandlerThread handlerThread;
+    private Handler handler;
+    private List<Classifier.Recognition> resultsRecognition;
     private Classifier classifier;
-    private Bitmap bRgba, bGray;
+    private Bitmap rgbaBitmap, grayBitmap;
     private String resultWord = "";
     private int threshold = 150;
+    private boolean isOnRecognizeState = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -64,8 +80,8 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
                 INPUT_NAME,
                 OUTPUT_NAME);
 
-        sbThreshold.setProgress(threshold);
-        sbThreshold.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        thresholdSeekBar.setProgress(threshold);
+        thresholdSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 threshold = progress;
@@ -84,37 +100,65 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
 
     @OnClick(R.id.img_clear)
     public void onClickClear() {
-        resultWord = "";
-        txvResult.setText(resultWord);
+        if (!resultWord.isEmpty()) {
+            resultWord = resultWord.substring(0, resultWord.length() - 1);
+            resultText.setText(resultWord);
+        }
+    }
+
+    @OnLongClick(R.id.img_clear)
+    public boolean onClickFullClear() {
+        if (!resultWord.isEmpty()) {
+            resultWord = "";
+            resultText.setText(resultWord);
+        }
+        return false;
     }
 
     @Override
     public void onFrameChanged(Bitmap bRgba, Bitmap bGray) {
-        this.bGray = bGray;
-        this.bRgba = bRgba;
-        imgRgb.setImageBitmap(bRgba);
-        imgGray.setImageBitmap(bGray);
-        runInBackground(runnableRecognition);
+        this.grayBitmap = bGray;
+        this.rgbaBitmap = bRgba;
+        rgbaImage.setImageBitmap(bRgba);
+        grayImage.setImageBitmap(bGray);
+        runInBackground(recognitionRunnable);
     }
 
-    private Runnable runnableRecognition = new Runnable() {
+    private Runnable recognitionRunnable = new Runnable() {
         @Override
         public void run() {
-            results = classifier.recognizeImage(bGray);
-            runOnUiThread(runnableResult);
+            if (!isOnRecognizeState) {
+                resultsRecognition = classifier.recognizeImage(grayBitmap);
+                runOnUiThread(resultRunnable);
+                isOnRecognizeState = true;
+            }
         }
     };
-    private Runnable runnableResult = new Runnable() {
+    private Runnable resultRunnable = new Runnable() {
         @Override
         public void run() {
-            if (!results.isEmpty()) {
-                Classifier.Recognition recognition = results.get(0);
+            if (!resultsRecognition.isEmpty()) {
+                Classifier.Recognition recognition = resultsRecognition.get(0);
                 String resultChar = (recognition.getConfidence() >= MIN_CONFIDENCE) ? UtilsTranslate.translate(recognition.getTitle()) : "";
                 if (!resultWord.endsWith(resultChar)) {
                     resultWord += resultChar;
-                    txvResult.setText(resultWord);
+                    resultText.setText(resultWord);
                 }
             }
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    isOnRecognizeState = false;
+                    runOnUiThread(visibilityStateRunnable);
+                }
+            }, DELAY_RECOGNITION);
+        }
+    };
+
+    private Runnable visibilityStateRunnable = new Runnable() {
+        @Override
+        public void run() {
+            spinKitView.setVisibility(spinKitView.getVisibility() == View.VISIBLE ? View.INVISIBLE : View.VISIBLE);
         }
     };
 
@@ -125,7 +169,7 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
 
     @Override
     public void onRestartHandler() {
-        removeRunnable(runnableRecognition);
+        removeRunnable(recognitionRunnable);
     }
 
     @Override
@@ -140,4 +184,35 @@ public class HomeActivity extends BaseActivity implements ICameraListener {
         stopHandler();
     }
 
+    private synchronized void runInBackground(final Runnable r) {
+        if (handler != null) {
+            handler.post(r);
+        }
+    }
+
+    private void startHandler() {
+        handlerThread = new HandlerThread("inference");
+        handlerThread.start();
+        handler = new Handler(handlerThread.getLooper());
+    }
+
+    private void stopHandler() {
+        handlerThread.quitSafely();
+        try {
+            handlerThread.join();
+            handlerThread = null;
+            handler = null;
+        } catch (final InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void removeRunnable(Runnable r) {
+        handler.removeCallbacks(r);
+    }
+
+    @Override
+    protected void attachBaseContext(Context context) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(context));
+    }
 }

@@ -15,6 +15,8 @@ public class UtilsConstants {
 
     public static final double MIN_CONFIDENCE = 0.4;
 
+    public static final long DELAY_RECOGNITION = 3000;
+
     public static final String INPUT_NAME = "Mul";
     public static final String OUTPUT_NAME = "final_result";
     public static final String MODEL_FILE = "file:///android_asset/output_graph.pb";

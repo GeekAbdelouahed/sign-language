@@ -40,4 +40,7 @@ dependencies {
 
     // Fonts
     compile 'uk.co.chrisjenx:calligraphy:2.2.0'
+
+    // Animation Loading
+    compile 'com.github.ybq:Android-SpinKit:1.1.0'
 }
