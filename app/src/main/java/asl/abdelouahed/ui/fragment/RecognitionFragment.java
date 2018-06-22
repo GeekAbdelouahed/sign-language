@@ -24,14 +24,18 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfInt;
+import org.opencv.core.MatOfInt4;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import asl.abdelouahed.ICameraListener;
@@ -76,8 +80,10 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
 
                 Bitmap bGray = UtilsImages.matToBitmap(mGray, rBound);
                 Bitmap bRgba = UtilsImages.matToBitmap(mRgba, rBound);
-                bGray = UtilsImages.scaleBitmap(bGray);
-                bRgba = UtilsImages.scaleBitmap(bRgba);
+                if (bGray != null)
+                    bGray = UtilsImages.scaleBitmap(bGray);
+           /*     if (bRgba != null)
+                    bRgba = UtilsImages.scaleBitmap(bRgba);*/
                 float degree = isFront ? -90 : 90;
                 bGray = UtilsImages.rotateBitmap(bGray, degree);
                 bRgba = UtilsImages.rotateBitmap(bRgba, degree);
@@ -153,7 +159,7 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
             touchedRegionRgba.release();
             touchedRegionHsv.release();
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }
@@ -185,6 +191,54 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
             }
         }
         rBound = Imgproc.boundingRect(new MatOfPoint(contours.get(boundPos).toArray()));
+        Imgproc.rectangle(mRgba, rBound.tl(), rBound.br(), new Scalar(255, 255, 255, 255), 2, 8, 0);
+
+        double a = rBound.br().y - rBound.tl().y;
+        a = a * 0.7;
+        a = rBound.tl().y + a;
+
+        MatOfPoint2f pointMat = new MatOfPoint2f();
+        Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(boundPos).toArray()), pointMat, 3, true);
+        contours.set(boundPos, new MatOfPoint(pointMat.toArray()));
+
+        MatOfInt hull = new MatOfInt();
+        MatOfInt4 convexDefect = new MatOfInt4();
+        Imgproc.convexHull(new MatOfPoint(contours.get(boundPos).toArray()), hull);
+
+        if (hull.toArray().length < 3) return mRgba;
+
+        Imgproc.convexityDefects(new MatOfPoint(contours.get(boundPos).toArray()), hull, convexDefect);
+
+        List<MatOfPoint> hullPoints = new LinkedList<>();
+        List<Point> listPo = new LinkedList<>();
+        for (int j = 0; j < hull.toList().size(); j++) {
+            listPo.add(contours.get(boundPos).toList().get(hull.toList().get(j)));
+        }
+
+        MatOfPoint e = new MatOfPoint();
+        e.fromList(listPo);
+        hullPoints.add(e);
+
+        List<MatOfPoint> defectPoints = new LinkedList<>();
+        List<Point> listPoDefect = new LinkedList<>();
+        for (int j = 0; j < convexDefect.toList().size(); j = j + 4) {
+            Point farPoint = contours.get(boundPos).toList().get(convexDefect.toList().get(j + 2));
+            Integer depth = convexDefect.toList().get(j + 3);
+            if (depth > threshold && farPoint.y < a) {
+                listPoDefect.add(contours.get(boundPos).toList().get(convexDefect.toList().get(j + 2)));
+            }
+        }
+
+        MatOfPoint e2 = new MatOfPoint();
+        e2.fromList(listPo);
+        defectPoints.add(e2);
+
+        Imgproc.drawContours(mRgba, hullPoints, -1, new Scalar(255, 0, 0, 255), 3);
+
+        for (Point p : listPoDefect) {
+            Imgproc.circle(mRgba, p, 6, new Scalar(255, 0, 255));
+        }
+
         getActivity().runOnUiThread(runnable);
         return mRgba;
     }
