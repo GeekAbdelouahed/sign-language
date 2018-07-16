@@ -14,11 +14,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.github.ybq.android.spinkit.SpinKitView;
-import com.github.ybq.android.spinkit.sprite.Sprite;
 
 import java.util.List;
 
-import asl.abdelouahed.ICameraListener;
+import asl.abdelouahed.CameraListener;
 import asl.abdelouahed.R;
 import asl.abdelouahed.model.Classifier;
 import asl.abdelouahed.model.TensorFlowImageClassifier;
@@ -29,17 +28,17 @@ import butterknife.OnClick;
 import butterknife.OnLongClick;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-import static asl.abdelouahed.utils.UtilsConstants.DELAY_RECOGNITION;
+import static asl.abdelouahed.utils.UtilsConstants.RECOGNITION_DELAY;
 import static asl.abdelouahed.utils.UtilsConstants.IMAGE_MEAN;
 import static asl.abdelouahed.utils.UtilsConstants.IMAGE_STD;
 import static asl.abdelouahed.utils.UtilsConstants.INPUT_NAME;
 import static asl.abdelouahed.utils.UtilsConstants.INPUT_SIZE;
-import static asl.abdelouahed.utils.UtilsConstants.LABEL_FILE;
+import static asl.abdelouahed.utils.UtilsConstants.LABEL_FILE_PATH;
 import static asl.abdelouahed.utils.UtilsConstants.MIN_CONFIDENCE;
-import static asl.abdelouahed.utils.UtilsConstants.MODEL_FILE;
+import static asl.abdelouahed.utils.UtilsConstants.MODEL_FILE_PATH;
 import static asl.abdelouahed.utils.UtilsConstants.OUTPUT_NAME;
 
-public class HomeActivity extends AppCompatActivity implements ICameraListener {
+public class HomeActivity extends AppCompatActivity implements CameraListener {
 
     private static final String TAG = "TAG:HomeActivity";
 
@@ -61,24 +60,28 @@ public class HomeActivity extends AppCompatActivity implements ICameraListener {
     private Bitmap rgbaBitmap, grayBitmap;
     private String resultWord = "";
     private int threshold = 150;
-    private boolean isOnRecognizeState = false;
+    private boolean isRecognitionState = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_home);
+
         ButterKnife.bind(this);
 
-        classifier = TensorFlowImageClassifier.create(getAssets(),
-                MODEL_FILE,
-                LABEL_FILE,
+        classifier = TensorFlowImageClassifier.create(
+                getAssets(),
+                MODEL_FILE_PATH,
+                LABEL_FILE_PATH,
                 INPUT_SIZE,
                 IMAGE_MEAN,
                 IMAGE_STD,
                 INPUT_NAME,
-                OUTPUT_NAME);
+                OUTPUT_NAME
+        );
 
         thresholdSeekBar.setProgress(threshold);
         thresholdSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -117,8 +120,8 @@ public class HomeActivity extends AppCompatActivity implements ICameraListener {
 
     @Override
     public void onFrameChanged(Bitmap bRgba, Bitmap bGray) {
-        this.grayBitmap = bGray;
-        this.rgbaBitmap = bRgba;
+        grayBitmap = bGray;
+        rgbaBitmap = bRgba;
         rgbaImage.setImageBitmap(bRgba);
         grayImage.setImageBitmap(bGray);
         runInBackground(recognitionRunnable);
@@ -127,13 +130,14 @@ public class HomeActivity extends AppCompatActivity implements ICameraListener {
     private Runnable recognitionRunnable = new Runnable() {
         @Override
         public void run() {
-            if (!isOnRecognizeState) {
+            if (!isRecognitionState) {
                 resultsRecognition = classifier.recognizeImage(grayBitmap);
                 runOnUiThread(resultRunnable);
-                isOnRecognizeState = true;
+                isRecognitionState = true;
             }
         }
     };
+
     private Runnable resultRunnable = new Runnable() {
         @Override
         public void run() {
@@ -148,10 +152,10 @@ public class HomeActivity extends AppCompatActivity implements ICameraListener {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    isOnRecognizeState = false;
+                    isRecognitionState = false;
                     runOnUiThread(visibilityStateRunnable);
                 }
-            }, DELAY_RECOGNITION);
+            }, RECOGNITION_DELAY);
         }
     };
 
@@ -170,18 +174,6 @@ public class HomeActivity extends AppCompatActivity implements ICameraListener {
     @Override
     public void onRestartHandler() {
         removeRunnable(recognitionRunnable);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        startHandler();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        stopHandler();
     }
 
     private synchronized void runInBackground(final Runnable r) {
@@ -214,5 +206,17 @@ public class HomeActivity extends AppCompatActivity implements ICameraListener {
     @Override
     protected void attachBaseContext(Context context) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(context));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startHandler();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopHandler();
     }
 }

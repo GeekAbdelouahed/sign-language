@@ -38,7 +38,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.LinkedList;
 import java.util.List;
 
-import asl.abdelouahed.ICameraListener;
+import asl.abdelouahed.CameraListener;
 import asl.abdelouahed.R;
 import asl.abdelouahed.ui.custom.CameraView;
 import asl.abdelouahed.utils.UtilsColorBlobDetector;
@@ -56,7 +56,8 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
     @BindView(R.id.camera_view)
     CameraView cameraView;
 
-    private ICameraListener listener;
+    private CameraListener listener;
+
     private Mat rgbaMat, grayMat;
     private Mat spectrumMat;
     private Rect boundRect;
@@ -64,6 +65,7 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
     private Size spectrumSize;
     private boolean isFront = false;
     private boolean isColorSelected = false;
+
     private AnimatorSet rotateFab;
     private Animator.AnimatorListener animatorListener = new AnimatorListenerAdapter() {
         @Override
@@ -73,6 +75,7 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
             switchCameraFab.setImageResource(camera_drawable);
         }
     };
+
     private final Runnable frameRunnable = new Runnable() {
         @Override
         public void run() {
@@ -81,8 +84,6 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
                 Bitmap bRgba = UtilsImages.matToBitmap(rgbaMat, boundRect);
                 if (bGray != null)
                     bGray = UtilsImages.scaleBitmap(bGray);
-           /*     if (bRgba != null)
-                    bRgba = UtilsImages.scaleBitmap(bRgba);*/
                 float degree = isFront ? -90 : 90;
                 bGray = UtilsImages.rotateBitmap(bGray, degree);
                 bRgba = UtilsImages.rotateBitmap(bRgba, degree);
@@ -95,9 +96,9 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.fragment_recognition, container, false);
         ButterKnife.bind(this, view);
+
         rotateFab = (AnimatorSet) AnimatorInflater.loadAnimator(getActivity(), R.animator.fab_rotate);
         rotateFab.setTarget(switchCameraFab);
         rotateFab.addListener(animatorListener);
@@ -112,6 +113,7 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
                 isFront = !isFront;
             }
         });
+
         return view;
     }
 
@@ -249,7 +251,7 @@ public class RecognitionFragment extends Fragment implements OnTouchListener, Cv
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        listener = (ICameraListener) context;
+        listener = (CameraListener) context;
     }
 
     @Override
