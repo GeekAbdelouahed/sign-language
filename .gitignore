@@ -6,7 +6,7 @@
 #app/src/main/assets/
 
 #opencv arhc
-app/src/main/jniLibs/
+#app/src/main/jniLibs/
 
 # Files for the ART/Dalvik VM
 *.dex
