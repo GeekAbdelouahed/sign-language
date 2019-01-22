@@ -3,7 +3,7 @@
 *.ap_
 
 #assets
-app/src/main/assets/
+#app/src/main/assets/
 
 #opencv arhc
 app/src/main/jniLibs/
